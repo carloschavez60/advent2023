@@ -1,7 +1,14 @@
 {
     "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "3": "nodemon --esm ./src/day3/sol1.ts",
+        "3-2": "nodemon --esm ./src/day3/sol2.ts"
+    },
     "devDependencies": {
         "@types/node": "^20.10.4",
+        "nodemon": "^3.0.2",
+        "ts-node": "^10.9.1",
         "typescript": "^5.3.3"
     }
 }
