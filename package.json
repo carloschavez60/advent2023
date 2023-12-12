@@ -9,7 +9,8 @@
         "4": "nodemon --esm ./src/day4/sol1.ts",
         "5": "nodemon --esm ./src/day5/sol1.ts",
         "5-2": "nodemon --esm ./src/day5/sol2.ts",
-        "5-3": "nodemon --esm ./src/day5/sol3.ts"
+        "5-3": "nodemon --esm ./src/day5/sol3.ts",
+        "6": "nodemon --esm ./src/day6/sol1.ts"
     },
     "devDependencies": {
         "@types/node": "^20.10.4",

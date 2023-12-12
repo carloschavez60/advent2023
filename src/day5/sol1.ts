@@ -72,6 +72,7 @@ maps.forEach((map) => {
   map.ranges = createNegativeRanges(map.ranges);
 });
 // console.log(JSON.stringify(maps, null, 4));
+// console.log(maps[1].ranges);
 
 console.time('partOne');
 partOne(seeds, maps);
