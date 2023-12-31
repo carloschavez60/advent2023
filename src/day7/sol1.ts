@@ -6,7 +6,7 @@ class Hand {
   strength: number;
   strengthWithJokers: number;
 
-  readonly #labelToCardStrength: { [label: string]: number } = Object.freeze({
+  readonly #labelToCardStrength: { [label: string]: number } = {
     '2': 2,
     '3': 3,
     '4': 4,
@@ -20,24 +20,23 @@ class Hand {
     Q: 12,
     K: 13,
     A: 14,
-  });
+  };
 
-  readonly #labelToCardStrengthWithJokers: { [label: string]: number } =
-    Object.freeze({
-      J: 1,
-      '2': 2,
-      '3': 3,
-      '4': 4,
-      '5': 5,
-      '6': 6,
-      '7': 7,
-      '8': 8,
-      '9': 9,
-      T: 10,
-      Q: 12,
-      K: 13,
-      A: 14,
-    });
+  readonly #labelToCardStrengthWithJokers: { [label: string]: number } = {
+    J: 1,
+    '2': 2,
+    '3': 3,
+    '4': 4,
+    '5': 5,
+    '6': 6,
+    '7': 7,
+    '8': 8,
+    '9': 9,
+    T: 10,
+    Q: 12,
+    K: 13,
+    A: 14,
+  };
 
   constructor(value: string, bid: number) {
     this.value = value;

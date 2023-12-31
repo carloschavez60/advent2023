@@ -60,15 +60,26 @@ class Hand {
     typeStrength: number
   ): number {
     const labels = value.split('');
-    let strength = 0;
-    let i = 0;
-    while (i < labels.length) {
-      strength += Math.pow(15, i) * labelToCardStrength[labels.at(-i - 1)!];
-      i++;
-    }
-    strength += Math.pow(15, i) * typeStrength;
 
-    return strength;
+    const rec = (
+      labels: string[],
+      i: number = 0,
+      exponent: number = labels.length - 1,
+      strength: number = 0
+    ): number => {
+      if (i >= labels.length) {
+        return strength;
+      }
+
+      return rec(
+        labels,
+        i + 1,
+        exponent - 1,
+        strength + Math.pow(15, exponent) * labelToCardStrength[labels[i]]
+      );
+    };
+
+    return rec(labels) + Math.pow(15, labels.length) * typeStrength;
   }
 
   #getTypeStrength(value: string): number {
@@ -141,17 +152,26 @@ class Hand {
   #getTypeStrengthWithJokers(value: string): number {
     const labels = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A'];
 
-    let highestTypeStrength = 0;
-    for (const label of labels) {
-      const newValue = value.replaceAll('J', label);
-
-      const typeStrength = this.#getTypeStrength(newValue);
-      if (typeStrength > highestTypeStrength) {
-        highestTypeStrength = typeStrength;
+    const rec = (
+      labels: string[],
+      i: number = 0,
+      highestTypeStrength: number = 0
+    ): number => {
+      if (i >= labels.length) {
+        return highestTypeStrength;
       }
-    }
+      const curValue = value.replaceAll('J', labels[i]);
+      const typeStrength = this.#getTypeStrength(curValue);
 
-    return highestTypeStrength;
+      return rec(
+        labels,
+        i + 1,
+        typeStrength > highestTypeStrength ? typeStrength : highestTypeStrength
+      );
+    };
+
+    // highestTypeStrength
+    return rec(labels);
   }
 }
 
@@ -173,12 +193,16 @@ function getHands(filePath: string): Hand[] {
   const lines = fileStr.split('\n');
   lines.pop();
 
-  const hands: Hand[] = [];
-  for (const line of lines) {
-    const [value, bid] = line.split(' ');
+  const rec = (lines: string[], i: number = 0, hands: Hand[] = []): Hand[] => {
+    if (i >= lines.length) {
+      return hands;
+    }
+    const [value, bid] = lines[i].split(' ');
     hands.push(new Hand(value, +bid));
-  }
-  return hands;
+    return rec(lines, i + 1, hands);
+  };
+
+  return rec(lines);
 }
 
 function partOne(hands: Hand[]) {

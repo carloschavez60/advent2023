@@ -62,14 +62,14 @@ class Hand {
     const labels = value.split('');
 
     const [strength, _] = labels.reduce(
-      ([strength, i], label) => [
-        strength + Math.pow(15, i) * labelToCardStrength[label],
+      ([sum, i], label) => [
+        sum + Math.pow(15, i) * labelToCardStrength[label],
         i - 1,
       ],
       [0, labels.length - 1]
     );
 
-    return Math.pow(15, labels.length) * typeStrength + strength;
+    return strength + Math.pow(15, labels.length) * typeStrength;
   }
 
   #getTypeStrength(value: string): number {
