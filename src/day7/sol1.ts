@@ -6,57 +6,49 @@ class Hand {
   strength: number;
   strengthWithJokers: number;
 
-  readonly #labelToCardStrength: { [label: string]: number } = {
-    '2': 2,
-    '3': 3,
-    '4': 4,
-    '5': 5,
-    '6': 6,
-    '7': 7,
-    '8': 8,
-    '9': 9,
-    T: 10,
-    J: 11,
-    Q: 12,
-    K: 13,
-    A: 14,
-  };
-
-  readonly #labelToCardStrengthWithJokers: { [label: string]: number } = {
-    J: 1,
-    '2': 2,
-    '3': 3,
-    '4': 4,
-    '5': 5,
-    '6': 6,
-    '7': 7,
-    '8': 8,
-    '9': 9,
-    T: 10,
-    Q: 12,
-    K: 13,
-    A: 14,
-  };
-
   constructor(value: string, bid: number) {
     this.value = value;
     this.bid = bid;
-    this.strength = this.#getStrength(
-      value,
-      this.#labelToCardStrength,
-      this.#getTypeStrength(value)
-    );
+    this.strength = this.#getStrength(value, this.#getTypeStrength(value), {
+      '2': 2,
+      '3': 3,
+      '4': 4,
+      '5': 5,
+      '6': 6,
+      '7': 7,
+      '8': 8,
+      '9': 9,
+      T: 10,
+      J: 11,
+      Q: 12,
+      K: 13,
+      A: 14,
+    });
     this.strengthWithJokers = this.#getStrength(
       value,
-      this.#labelToCardStrengthWithJokers,
-      this.#getTypeStrengthWithJokers(value)
+      this.#getTypeStrengthWithJokers(value),
+      {
+        J: 1,
+        '2': 2,
+        '3': 3,
+        '4': 4,
+        '5': 5,
+        '6': 6,
+        '7': 7,
+        '8': 8,
+        '9': 9,
+        T: 10,
+        Q: 12,
+        K: 13,
+        A: 14,
+      }
     );
   }
 
   #getStrength(
     value: string,
-    labelToCardStrength: { [label: string]: number },
-    typeStrength: number
+    typeStrength: number,
+    labelToCardStrength: { [label: string]: number }
   ): number {
     const labels = value.split('');
     let strength = 0;
