@@ -1,9 +1,15 @@
 import { readFileSync } from 'node:fs';
 
-interface NearNumber {
+class NearNumber {
   value: string;
   x: number;
   y: number;
+
+  constructor(value: string, x: number, y: number) {
+    this.value = value;
+    this.x = x;
+    this.y = y;
+  }
 }
 
 // const buf = readFileSync(process.cwd() + '/src/day3/test-input.txt'); // 4361 467835
@@ -122,7 +128,6 @@ function getGearRatio(x: number, y: number, lines: string[]): number {
 function getNearNumber(x: number, y: number, lines: string[]): NearNumber {
   let number = lines[y][x];
   let numX = x;
-  let numY = y;
 
   let i = 1;
   while (isNumber(lines[y][x + i])) {
@@ -136,11 +141,7 @@ function getNearNumber(x: number, y: number, lines: string[]): NearNumber {
     i++;
   }
 
-  return {
-    value: number,
-    x: numX,
-    y: numY,
-  };
+  return new NearNumber(number, numX, y);
 }
 
 function isNumber(char: string): boolean {
