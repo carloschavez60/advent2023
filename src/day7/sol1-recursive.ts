@@ -193,11 +193,17 @@ function partTwo(hands: Hand[]) {
   console.log(getTotalWinnings(orderedHands));
 }
 
-function getTotalWinnings(orderedHands: Hand[]): number {
-  let totalWinnings = 0;
-  for (let i = 0; i < orderedHands.length; i++) {
-    const hand = orderedHands[i];
-    totalWinnings += (i + 1) * hand.bid;
+function getTotalWinnings(
+  orderedHands: Hand[],
+  rank: number = 1,
+  sum: number = 0
+): number {
+  if (rank > orderedHands.length) {
+    return sum;
   }
-  return totalWinnings;
+  return getTotalWinnings(
+    orderedHands,
+    rank + 1,
+    sum + orderedHands[rank - 1].bid * rank
+  );
 }

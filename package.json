@@ -13,6 +13,7 @@
         "6": "nodemon --esm ./src/day6/sol1.ts",
         "7": "nodemon --esm ./src/day7/sol1.ts",
         "7d": "nodemon --esm ./src/day7/sol1-declarative.ts",
+        "7r": "nodemon --esm ./src/day7/sol1-recursive.ts",
         "8": "nodemon --esm ./src/day8/sol1.ts",
         "9": "nodemon --esm ./src/day9/sol1.ts",
         "10": "nodemon --esm ./src/day10/sol1.ts"
