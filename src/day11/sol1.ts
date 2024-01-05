@@ -67,9 +67,7 @@ function expandLines(lines: readonly string[]): readonly string[] {
     if (colContainsNoGalaxies) {
       for (let y = 0; y < expandedLines.length; y++) {
         expandedLines[y] =
-          expandedLines[y].slice(0, x + 1) +
-          '.' +
-          expandedLines[y].slice(x + 1);
+          expandedLines[y].slice(0, x) + '.' + expandedLines[y].slice(x);
       }
       x++;
     }
@@ -122,12 +120,31 @@ function getExpandedGalaxies(
   galaxies: readonly Galaxy[],
   lines: readonly string[]
 ): readonly Galaxy[] {
-  const expandedGalaxies: Galaxy[] = [...galaxies];
+  const rowMultipliers = getRowMultipliers(galaxies, lines);
+  const colMultipliers = getColMultipliers(galaxies, lines);
 
-  // expand rows
-  const arr: number[] = [];
-  for (let j = 0; j < galaxies.length; j++) {
-    arr[j] = 0;
+  const expandedGalaxies: Galaxy[] = [];
+  for (let i = 0; i < galaxies.length; i++) {
+    const galaxy = galaxies[i];
+    expandedGalaxies.push(
+      new Galaxy(
+        galaxy.id,
+        galaxy.x + (expansionCoefficient - 1) * colMultipliers[i],
+        galaxy.y + (expansionCoefficient - 1) * rowMultipliers[i]
+      )
+    );
+  }
+
+  return expandedGalaxies;
+}
+
+function getRowMultipliers(
+  galaxies: readonly Galaxy[],
+  lines: readonly string[]
+): readonly number[] {
+  const rowMultipliers: number[] = [];
+  for (let i = 0; i < galaxies.length; i++) {
+    rowMultipliers[i] = 0;
   }
 
   for (let y = 0; y < lines.length; y++) {
@@ -135,27 +152,25 @@ function getExpandedGalaxies(
     const emptyLine = ''.padStart(line.length, '.');
 
     if (line === emptyLine) {
-      for (let j = 0; j < expandedGalaxies.length; j++) {
-        const galaxy = expandedGalaxies[j];
+      for (let i = 0; i < galaxies.length; i++) {
+        const galaxy = galaxies[i];
         if (galaxy.y > y) {
-          arr[j]++;
+          rowMultipliers[i]++;
         }
       }
     }
   }
 
-  for (let j = 0; j < expandedGalaxies.length; j++) {
-    const galaxy = expandedGalaxies[j];
-    expandedGalaxies[j] = new Galaxy(
-      galaxy.id,
-      galaxy.x,
-      galaxy.y + (expansionCoefficient - 1) * arr[j]
-    );
-  }
+  return rowMultipliers;
+}
 
-  //expand columns
-  for (let j = 0; j < galaxies.length; j++) {
-    arr[j] = 0;
+function getColMultipliers(
+  galaxies: readonly Galaxy[],
+  lines: readonly string[]
+): readonly number[] {
+  const colMultipliers: number[] = [];
+  for (let i = 0; i < galaxies.length; i++) {
+    colMultipliers[i] = 0;
   }
 
   for (let x = 0; x < lines[0].length; x++) {
@@ -167,23 +182,14 @@ function getExpandedGalaxies(
     }
 
     if (colContainsNoGalaxies) {
-      for (let j = 0; j < expandedGalaxies.length; j++) {
-        const galaxy = expandedGalaxies[j];
+      for (let i = 0; i < galaxies.length; i++) {
+        const galaxy = galaxies[i];
         if (galaxy.x > x) {
-          arr[j]++;
+          colMultipliers[i]++;
         }
       }
     }
   }
 
-  for (let j = 0; j < expandedGalaxies.length; j++) {
-    const galaxy = expandedGalaxies[j];
-    expandedGalaxies[j] = new Galaxy(
-      galaxy.id,
-      galaxy.x + (expansionCoefficient - 1) * arr[j],
-      galaxy.y
-    );
-  }
-
-  return expandedGalaxies;
+  return colMultipliers;
 }
