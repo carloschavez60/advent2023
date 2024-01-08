@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs';
 
 class Galaxy {
-  readonly id: number;
-  readonly x: number;
-  readonly y: number;
+  id: number;
+  x: number;
+  y: number;
 
   constructor(id: number, x: number, y: number) {
     this.id = id;
@@ -16,45 +16,39 @@ class Galaxy {
   }
 }
 
-// const filePath = process.cwd() + '/src/day11/test-input.txt';
-const filePath = process.cwd() + '/src/day11/input.txt'; // 9536038 447744640566
+main();
 
-const lines = getFileLines(filePath);
+function main() {
+  // const filePath = process.cwd() + '/src/day11/test-input.txt';
+  const filePath = process.cwd() + '/src/day11/input.txt'; // 9536038 447744640566
 
-console.time('partOne');
-partOne(lines);
-console.timeEnd('partOne');
+  const lines = getFileLines(filePath);
 
-console.time('partTwo');
-partTwo(lines);
-console.timeEnd('partTwo');
+  console.time('partOne');
+  partOne(lines);
+  console.timeEnd('partOne');
 
-function getFileLines(filePath: string): readonly string[] {
+  console.time('partTwo');
+  partTwo(lines);
+  console.timeEnd('partTwo');
+}
+
+function getFileLines(filePath: string): string[] {
   const fileAsString = readFileSync(filePath, 'utf8');
   const lines = fileAsString.split('\n');
   lines.pop();
   return lines;
 }
 
-function partOne(lines: readonly string[]) {
+function partOne(lines: string[]) {
   const expandedLines = expandLines(lines);
   const galaxies = getGalaxies(expandedLines);
   const shortestPathSum = getShortestPathSum(galaxies);
   console.log(shortestPathSum);
 }
 
-function expandLines(lines: readonly string[]): readonly string[] {
-  // expand rows
+function expandLines(lines: string[]): string[] {
   const expandedLines = [...lines];
-  for (let y = 0; y < expandedLines.length; y++) {
-    const line = expandedLines[y];
-    const emptyLine = ''.padStart(line.length, '.');
-
-    if (line === emptyLine) {
-      expandedLines.splice(y, 0, emptyLine);
-      y++;
-    }
-  }
   //expand columns
   for (let x = 0; x < expandedLines[0].length; x++) {
     let colContainsNoGalaxies = true;
@@ -72,10 +66,21 @@ function expandLines(lines: readonly string[]): readonly string[] {
       x++;
     }
   }
+
+  // expand rows
+  for (let y = 0; y < expandedLines.length; y++) {
+    const line = expandedLines[y];
+    const emptyLine = ''.padStart(line.length, '.');
+
+    if (line === emptyLine) {
+      expandedLines.splice(y, 0, emptyLine);
+      y++;
+    }
+  }
   return expandedLines;
 }
 
-function getGalaxies(lines: readonly string[]): readonly Galaxy[] {
+function getGalaxies(lines: string[]): Galaxy[] {
   const galaxies: Galaxy[] = [];
   let n = 1;
   for (let y = 0; y < lines.length; y++) {
@@ -89,7 +94,7 @@ function getGalaxies(lines: readonly string[]): readonly Galaxy[] {
   return galaxies;
 }
 
-function getShortestPathSum(galaxies: readonly Galaxy[]): number {
+function getShortestPathSum(galaxies: Galaxy[]): number {
   let sum = 0;
   for (let i = 0; i < galaxies.length - 1; i++) {
     const galaxyI = galaxies[i];
@@ -102,7 +107,7 @@ function getShortestPathSum(galaxies: readonly Galaxy[]): number {
   return sum;
 }
 
-function partTwo(lines: readonly string[]) {
+function partTwo(lines: string[]) {
   const expansionCoefficient = 1000000;
 
   const galaxies = getGalaxies(lines);
@@ -117,9 +122,9 @@ function partTwo(lines: readonly string[]) {
 
 function getExpandedGalaxies(
   expansionCoefficient: number,
-  galaxies: readonly Galaxy[],
-  lines: readonly string[]
-): readonly Galaxy[] {
+  galaxies: Galaxy[],
+  lines: string[]
+): Galaxy[] {
   const rowMultipliers = getRowMultipliers(galaxies, lines);
   const colMultipliers = getColMultipliers(galaxies, lines);
 
@@ -138,10 +143,7 @@ function getExpandedGalaxies(
   return expandedGalaxies;
 }
 
-function getRowMultipliers(
-  galaxies: readonly Galaxy[],
-  lines: readonly string[]
-): readonly number[] {
+function getRowMultipliers(galaxies: Galaxy[], lines: string[]): number[] {
   const rowMultipliers: number[] = [];
   for (let i = 0; i < galaxies.length; i++) {
     rowMultipliers[i] = 0;
@@ -164,10 +166,7 @@ function getRowMultipliers(
   return rowMultipliers;
 }
 
-function getColMultipliers(
-  galaxies: readonly Galaxy[],
-  lines: readonly string[]
-): readonly number[] {
+function getColMultipliers(galaxies: Galaxy[], lines: string[]): number[] {
   const colMultipliers: number[] = [];
   for (let i = 0; i < galaxies.length; i++) {
     colMultipliers[i] = 0;
