@@ -1,47 +1,68 @@
 import { readFileSync } from 'fs';
 
 class Hand {
-  value: string;
-  bid: number;
-  strength: number;
-  strengthWithJokers: number;
+  readonly value: string;
+  readonly bid: number;
+  readonly strength: number;
+  readonly strengthWithJokers: number;
+
+  #labelToCardStrength = {
+    '2': 2,
+    '3': 3,
+    '4': 4,
+    '5': 5,
+    '6': 6,
+    '7': 7,
+    '8': 8,
+    '9': 9,
+    T: 10,
+    J: 11,
+    Q: 12,
+    K: 13,
+    A: 14,
+  } as const;
+  #labelToCardStrengthWithJokers = {
+    J: 1,
+    '2': 2,
+    '3': 3,
+    '4': 4,
+    '5': 5,
+    '6': 6,
+    '7': 7,
+    '8': 8,
+    '9': 9,
+    T: 10,
+    Q: 12,
+    K: 13,
+    A: 14,
+  } as const;
+  #labels = [
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    'T',
+    'Q',
+    'K',
+    'A',
+  ] as const;
 
   constructor(value: string, bid: number) {
     this.value = value;
     this.bid = bid;
-    this.strength = this.#getStrength(value, this.#getTypeStrength(value), {
-      '2': 2,
-      '3': 3,
-      '4': 4,
-      '5': 5,
-      '6': 6,
-      '7': 7,
-      '8': 8,
-      '9': 9,
-      T: 10,
-      J: 11,
-      Q: 12,
-      K: 13,
-      A: 14,
-    });
+    this.strength = this.#getStrength(
+      value,
+      this.#getTypeStrength(value),
+      this.#labelToCardStrength
+    );
     this.strengthWithJokers = this.#getStrength(
       value,
       this.#getTypeStrengthWithJokers(value),
-      {
-        J: 1,
-        '2': 2,
-        '3': 3,
-        '4': 4,
-        '5': 5,
-        '6': 6,
-        '7': 7,
-        '8': 8,
-        '9': 9,
-        T: 10,
-        Q: 12,
-        K: 13,
-        A: 14,
-      }
+      this.#labelToCardStrengthWithJokers
     );
   }
 
@@ -51,6 +72,7 @@ class Hand {
     labelToCardStrength: { [label: string]: number }
   ): number {
     const labels = value.split('');
+
     let strength = 0;
     let i = 0;
     while (i < labels.length) {
@@ -58,7 +80,6 @@ class Hand {
       i++;
     }
     strength += Math.pow(15, i) * typeStrength;
-
     return strength;
   }
 
@@ -130,36 +151,35 @@ class Hand {
   }
 
   #getTypeStrengthWithJokers(value: string): number {
-    const labels = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A'];
-
-    let highestTypeStrength = 0;
-    for (const label of labels) {
-      const newValue = value.replaceAll('J', label);
-
-      const typeStrength = this.#getTypeStrength(newValue);
-      if (typeStrength > highestTypeStrength) {
-        highestTypeStrength = typeStrength;
-      }
+    let max = 0;
+    for (const label of this.#labels) {
+      const typeStrength = this.#getTypeStrength(value.replaceAll('J', label));
+      max = Math.max(typeStrength, max);
     }
-
-    return highestTypeStrength;
+    return max;
   }
 }
 
-// const filePath = process.cwd() + '/src/day7/test-input.txt';
-const filePath = process.cwd() + '/src/day7/input.txt'; // 248569531 250382098
+main();
 
-const hands = getHands(filePath);
+function main() {
+  // const filePath = process.cwd() + '/src/day7/test-input.txt';
+  const filePath = process.cwd() + '/src/day7/input.txt'; // 248569531 250382098
 
-console.time('partOne');
-partOne(hands);
-console.timeEnd('partOne');
+  const hands = getHands(filePath);
 
-console.time('partTwo');
-partTwo(hands);
-console.timeEnd('partTwo');
+  console.time('partOne');
+  let totalWinnings = partOne(hands);
+  console.log(totalWinnings);
+  console.timeEnd('partOne');
 
-function getHands(filePath: string): Hand[] {
+  console.time('partTwo');
+  totalWinnings = partTwo(hands);
+  console.log(totalWinnings);
+  console.timeEnd('partTwo');
+}
+
+function getHands(filePath: string): readonly Hand[] {
   const fileStr = readFileSync(filePath, 'utf8');
   const lines = fileStr.split('\n');
   lines.pop();
@@ -172,23 +192,23 @@ function getHands(filePath: string): Hand[] {
   return hands;
 }
 
-function partOne(hands: Hand[]) {
+function partOne(hands: readonly Hand[]): number {
   const orderedHands = [...hands];
   orderedHands.sort((a, b) => a.strength - b.strength);
-  console.log(getTotalWinnings(orderedHands));
+  return getTotalWinnings(orderedHands);
 }
 
-function partTwo(hands: Hand[]) {
+function partTwo(hands: readonly Hand[]): number {
   const orderedHands = [...hands];
   orderedHands.sort((a, b) => a.strengthWithJokers - b.strengthWithJokers);
-  console.log(getTotalWinnings(orderedHands));
+  return getTotalWinnings(orderedHands);
 }
 
-function getTotalWinnings(orderedHands: Hand[]): number {
-  let totalWinnings = 0;
+function getTotalWinnings(orderedHands: readonly Hand[]): number {
+  let sum = 0;
   for (let i = 0; i < orderedHands.length; i++) {
     const hand = orderedHands[i];
-    totalWinnings += (i + 1) * hand.bid;
+    sum += (i + 1) * hand.bid;
   }
-  return totalWinnings;
+  return sum;
 }

@@ -59,7 +59,7 @@ class Hand {
       strength: number = 0
     ): number => {
       if (i >= labels.length) {
-        return strength;
+        return strength + Math.pow(15, labels.length) * typeStrength;
       }
 
       return rec(
@@ -70,7 +70,7 @@ class Hand {
       );
     };
 
-    return rec(labels) + Math.pow(15, labels.length) * typeStrength;
+    return rec(labels);
   }
 
   #getTypeStrength(value: string): number {
