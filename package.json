@@ -2,28 +2,22 @@
     "type": "module",
     "scripts": {
         "build": "tsc",
-        "1": "nodemon --esm ./src/day1/sol1.ts",
-        "2": "nodemon --esm ./src/day2/sol1.ts",
-        "3": "nodemon --esm ./src/day3/sol1.ts",
-        "3-2": "nodemon --esm ./src/day3/sol2.ts",
-        "4": "nodemon --esm ./src/day4/sol1.ts",
-        "5": "nodemon --esm ./src/day5/sol1.ts",
-        "5-2": "nodemon --esm ./src/day5/sol2.ts",
-        "5-3": "nodemon --esm ./src/day5/sol3.ts",
-        "6": "nodemon --esm ./src/day6/sol1.ts",
-        "7": "nodemon --esm ./src/day7/sol1.ts",
-        "7d": "nodemon --esm ./src/day7/sol1-declarative.ts",
-        "7r": "nodemon --esm ./src/day7/sol1-recursive.ts",
-        "8": "nodemon --esm ./src/day8/sol1.ts",
-        "9": "nodemon --esm ./src/day9/sol1.ts",
-        "10": "nodemon --esm ./src/day10/sol1.ts",
-        "11": "nodemon --esm ./src/day11/sol1.ts",
-        "12": "nodemon --esm ./src/day12/sol1.ts"
+        "watch": "tsc --watch",
+        "1": "node --watch ./build/day1/sol1.js",
+        "2": "node --watch ./build/day2/sol1.js",
+        "3": "node --watch ./build/day3/sol1.js",
+        "4": "node --watch ./build/day4/sol1.js",
+        "5": "node --watch ./build/day5/sol1.js",
+        "6": "node --watch ./build/day6/sol1.js",
+        "7": "node --watch ./build/day7/sol1.js",
+        "8": "node --watch ./build/day8/sol1.js",
+        "9": "node --watch ./build/day9/sol1.js",
+        "10": "node --watch ./build/day10/sol1.js",
+        "11": "node --watch ./build/day11/sol1.js",
+        "12": "node --watch ./build/day12/sol1.js"
     },
     "devDependencies": {
         "@types/node": "^20.10.4",
-        "nodemon": "^3.0.2",
-        "ts-node": "^10.9.1",
         "typescript": "^5.3.3"
     }
 }
