@@ -5,6 +5,17 @@ class Card {
     public readonly winningNumbers: readonly number[],
     public readonly numbers: readonly number[]
   ) {}
+
+  getWorth(): number {
+    const wnCount = this.getWinningNumberCount();
+    return wnCount > 0 ? Math.pow(2, wnCount - 1) : 0;
+  }
+
+  getWinningNumberCount(): number {
+    return this.numbers.filter((n) =>
+      this.winningNumbers.some((wn) => wn === n)
+    ).length;
+  }
 }
 
 main();
@@ -22,8 +33,8 @@ function main() {
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  // const totalCards = partTwo(cards);
-  // console.log(totalCards);
+  const totalCards = partTwo(cards);
+  console.log(totalCards);
   console.timeEnd('partTwo');
 }
 
@@ -43,57 +54,23 @@ function getCards(lines: readonly string[]): readonly Card[] {
 }
 
 function partOne(cards: readonly Card[]): number {
-  return cards.reduce((s, card) => s + getWorth(card), 0);
-}
-
-function getWorth(card: Card): number {
-  const wnCount = card.numbers.filter((n) =>
-    card.winningNumbers.some((wn) => wn === n)
-  ).length;
-  return wnCount > 0 ? Math.pow(2, wnCount - 1) : 0;
+  return cards.reduce((s, card) => s + card.getWorth(), 0);
 }
 
 function partTwo(cards: readonly Card[]): number {
-  return 0;
-  // const copiesArr: number[] = [];
-  // let totalCards = 0;
-  // for (const line of lines) {
-  //   const copies = copiesArr.shift() ?? 0;
-  //   const instances = 1 + copies;
-  //   totalCards += instances;
-  //   const myWinNumsCount = getMyWinNumsCount(line);
-  //   for (let i = 0; i < myWinNumsCount; i++) {
-  //     if (copiesArr[i] !== undefined) {
-  //       copiesArr[i] += instances;
-  //     } else {
-  //       copiesArr.push(instances);
-  //     }
-  //   }
-  //   // console.log(copiesArr);
-  // }
-  // console.log(totalCards);
-}
-
-function getMyWinNumsCount(line: string) {
-  const [_, nums] = line.split(':');
-  const [wStr, myStr] = nums.split('|');
-  const winNums = toNumArray(wStr);
-  const myNums = toNumArray(myStr);
-
-  let myWinNumCount = 0;
-  for (const myNum of myNums) {
-    for (const winNum of winNums) {
-      if (myNum === winNum) {
-        myWinNumCount++;
+  const copiesArr: number[] = [];
+  let totalCards = 0;
+  for (const card of cards) {
+    const instances = 1 + (copiesArr.shift() ?? 0);
+    totalCards += instances;
+    const myWinNumsCount = card.getWinningNumberCount();
+    for (let i = 0; i < myWinNumsCount; i++) {
+      if (copiesArr[i] !== undefined) {
+        copiesArr[i] += instances;
+      } else {
+        copiesArr.push(instances);
       }
     }
   }
-  return myWinNumCount;
-}
-
-function toNumArray(str: string) {
-  return str
-    .split(' ')
-    .filter((elem) => elem !== '')
-    .map((str) => parseInt(str));
+  return totalCards;
 }
