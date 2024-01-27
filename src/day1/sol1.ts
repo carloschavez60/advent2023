@@ -55,20 +55,21 @@ function partTwo(lines: readonly string[]): number {
 }
 
 function getCalibrationValuePartTwo(line: string): number {
-  const digits: readonly number[] = line
+  const digits = line
     .split('')
-    .reduce((digits: number[], char, i) => {
+    .map((char, i) => {
       if (isNumber(char)) {
-        digits.push(parseInt(char));
+        return parseInt(char);
       }
       const key = Object.keys(stringToNumber).find((key) =>
         line.startsWith(key, i)
       );
       if (key !== undefined) {
-        digits.push(stringToNumber[key as keyof typeof stringToNumber]);
+        return stringToNumber[key as keyof typeof stringToNumber];
       }
-      return digits;
-    }, []);
+      return undefined;
+    })
+    .filter((n) => n !== undefined) as readonly number[];
   const firstDigit = digits[0];
   const lastDigit = digits.at(-1);
   if (firstDigit !== undefined && lastDigit !== undefined) {
