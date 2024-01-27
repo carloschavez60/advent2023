@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { getLines } from '../utils.js';
 
 const stringToNumber = {
   one: 1,
@@ -15,9 +15,9 @@ const stringToNumber = {
 main();
 
 function main() {
-  const filePath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
+  // const filePath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
   // const filePath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
-  // const filePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
+  const filePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
 
   const lines = getLines(filePath);
 
@@ -30,12 +30,6 @@ function main() {
   const calibrationValueSum2 = partTwo(lines);
   console.log(calibrationValueSum2);
   console.timeEnd('partTwo');
-}
-
-function getLines(filePath: string): readonly string[] {
-  const lines = readFileSync(filePath, 'utf8').split('\n');
-  lines.pop();
-  return lines;
 }
 
 function partOne(lines: readonly string[]): number {

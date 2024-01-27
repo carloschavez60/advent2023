@@ -1,80 +1,93 @@
-import { readFileSync } from 'node:fs';
+import { getLines } from '../utils.js';
 
-// const buf = readFileSync(process.cwd() + '/src/day2/test-input.txt'); // 8 2286
-const buf = readFileSync(process.cwd() + '/src/day2/input.txt'); // 2476 54911
-const input = buf.toString();
-const lines = input.split('\n');
-lines.pop();
+const config = {
+  red: 12,
+  green: 13,
+  blue: 14,
+} as const;
 
-console.time('partOne');
-partOne(lines);
-console.timeEnd('partOne');
-console.time('partTwo');
-partTwo(lines);
-console.timeEnd('partTwo');
-
-function partOne(lines: string[]) {
-  const config: { [index: string]: number } = {
-    red: 12,
-    green: 13,
-    blue: 14,
-  };
-
-  let gameIdsSum = 0;
-  for (const line of lines) {
-    const [gameID, i] = getGameId(line);
-    let gameIsPosible = true;
-
-    const sets = line.substring(i).split(';');
-    for (const set of sets) {
-      const subsets = set.split(',');
-      for (const subset of subsets) {
-        const [cubeCount, cubeColor] = subset.trimStart().split(' ');
-        if (parseInt(cubeCount) > config[cubeColor]) {
-          gameIsPosible = false;
-        }
-      }
-    }
-
-    if (gameIsPosible) {
-      gameIdsSum += parseInt(gameID);
-    }
-  }
-  console.log(gameIdsSum);
+class Game {
+  constructor(
+    public readonly gameID: string,
+    public readonly sets: readonly GameSet[]
+  ) {}
 }
 
-function partTwo(lines: string[]) {
-  let powersSum = 0;
-  for (const line of lines) {
-    const fewest: { [index: string]: number } = {
-      red: 0,
-      green: 0,
-      blue: 0,
-    };
-
-    const [_, i] = getGameId(line);
-    const sets = line.substring(i).split(';');
-    for (const set of sets) {
-      const subsets = set.split(',');
-      for (const subset of subsets) {
-        const [cubeCountStr, cubeColor] = subset.trimStart().split(' ');
-        const cubeCount = parseInt(cubeCountStr);
-        if (cubeCount > fewest[cubeColor]) {
-          fewest[cubeColor] = cubeCount;
-        }
-      }
-    }
-    powersSum += fewest.red * fewest.green * fewest.blue;
-  }
-  console.log(powersSum);
+class GameSet {
+  constructor(
+    public readonly red: number,
+    public readonly green: number,
+    public readonly blue: number
+  ) {}
 }
 
-function getGameId(line: string): [string, number] {
-  let id = line[5];
-  let x = 6;
-  while (line[x] !== ':') {
-    id += line[x];
-    x++;
-  }
-  return [id, x + 1];
+main();
+
+function main() {
+  // const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
+  const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
+
+  const lines = getLines(filePath);
+  const games = getGames(lines);
+
+  console.time('partOne');
+  const gameIdSum = partOne(games);
+  console.log(gameIdSum);
+  console.timeEnd('partOne');
+
+  console.time('partTwo');
+  const setPowerSum = partTwo(games);
+  console.log(setPowerSum);
+  console.timeEnd('partTwo');
+}
+
+function getGames(lines: readonly string[]): readonly Game[] {
+  return lines.map((line) => {
+    const [game, setsAsString] = line.split(':');
+    const gameID = game.split(' ')[1];
+    const sets = setsAsString.split(';').map((setAsString) => {
+      const subsets = setAsString
+        .split(',')
+        .reduce((acc: { [color: string]: number }, subsetAsString) => {
+          const [cubeCount, cubeColor] = subsetAsString.trimStart().split(' ');
+          acc[cubeColor] = parseInt(cubeCount);
+          return acc;
+        }, {});
+      return new GameSet(
+        subsets.red ?? 0,
+        subsets.green ?? 0,
+        subsets.blue ?? 0
+      );
+    });
+    return new Game(gameID, sets);
+  });
+}
+
+function partOne(games: readonly Game[]): number {
+  return games
+    .filter((game) => isPossible(game))
+    .reduce((sum, game) => sum + parseInt(game.gameID), 0);
+}
+
+function isPossible(game: Game): boolean {
+  return game.sets.every(
+    (set) =>
+      set.red <= config.red &&
+      set.green <= config.green &&
+      set.blue <= config.blue
+  );
+}
+
+function partTwo(games: readonly Game[]): number {
+  return games
+    .map((game) =>
+      game.sets.reduce((minSet, set) => {
+        return new GameSet(
+          Math.max(set.red, minSet.red),
+          Math.max(set.green, minSet.green),
+          Math.max(set.blue, minSet.blue)
+        );
+      })
+    )
+    .reduce((sum, minSet) => sum + minSet.red * minSet.green * minSet.blue, 0);
 }
