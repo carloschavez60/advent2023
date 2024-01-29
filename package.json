@@ -1,7 +1,7 @@
 {
     "type": "module",
     "scripts": {
-        "build": "tsc",
+        "build": "rm -r ./build/ && tsc",
         "watch": "tsc --watch",
         "1": "node --watch ./build/day1/sol1.js",
         "2": "node --watch ./build/day2/sol1.js",

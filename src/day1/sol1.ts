@@ -33,13 +33,26 @@ function main() {
 }
 
 function partOne(lines: readonly string[]): number {
-  return lines.reduce((s, line) => s + getCalibrationValue(line), 0);
+  let sum = 0;
+  for (const line of lines) {
+    sum += getCalibrationValue(line);
+  }
+  return sum;
 }
 
 function getCalibrationValue(line: string): number {
-  const digits = line.split('').filter((char) => isNumber(char));
-  const firstDigit = digits[0];
-  const lastDigit = digits.at(-1);
+  let firstDigit: string | undefined;
+  let lastDigit: string | undefined;
+  let firstDigitWasCatched = false;
+  for (const char of line) {
+    if (isNumber(char)) {
+      lastDigit = char;
+      if (!firstDigitWasCatched) {
+        firstDigit = char;
+        firstDigitWasCatched = true;
+      }
+    }
+  }
   if (firstDigit !== undefined && lastDigit !== undefined) {
     return parseInt(firstDigit + lastDigit);
   }
@@ -51,29 +64,44 @@ function isNumber(char: string): boolean {
 }
 
 function partTwo(lines: readonly string[]): number {
-  return lines.reduce((s, line) => s + getCalibrationValuePartTwo(line), 0);
+  let sum = 0;
+  for (const line of lines) {
+    sum += getPartTwoCalibrationValue(line);
+  }
+  return sum;
 }
 
-function getCalibrationValuePartTwo(line: string): number {
-  const digits = line
-    .split('')
-    .map((char, i) => {
-      if (isNumber(char)) {
-        return parseInt(char);
+function getPartTwoCalibrationValue(line: string): number {
+  let firstDigit: number | undefined;
+  let lastDigit: number | undefined;
+  let firstDigitWasCatched = false;
+  for (let x = 0; x < line.length; x++) {
+    const char = line[x];
+    let n: number | undefined;
+    if (isNumber(char)) {
+      n = parseInt(char);
+    } else {
+      n = getSpelledNumber(x, line);
+    }
+    if (n !== undefined) {
+      lastDigit = n;
+      if (!firstDigitWasCatched) {
+        firstDigit = n;
+        firstDigitWasCatched = true;
       }
-      const key = Object.keys(stringToNumber).find((key) =>
-        line.startsWith(key, i)
-      );
-      if (key !== undefined) {
-        return stringToNumber[key as keyof typeof stringToNumber];
-      }
-      return undefined;
-    })
-    .filter((n) => n !== undefined) as readonly number[];
-  const firstDigit = digits[0];
-  const lastDigit = digits.at(-1);
+    }
+  }
   if (firstDigit !== undefined && lastDigit !== undefined) {
     return firstDigit * 10 + lastDigit;
   }
   return 0;
+}
+
+function getSpelledNumber(index: number, line: string): number | undefined {
+  for (const s in stringToNumber) {
+    if (line.startsWith(s, index)) {
+      return stringToNumber[s as keyof typeof stringToNumber];
+    }
+  }
+  return undefined;
 }
