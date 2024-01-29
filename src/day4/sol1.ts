@@ -58,19 +58,23 @@ function partOne(cards: readonly Card[]): number {
 }
 
 function partTwo(cards: readonly Card[]): number {
-  const copiesArr: number[] = [];
-  let totalCards = 0;
-  for (const card of cards) {
-    const instances = 1 + (copiesArr.shift() ?? 0);
-    totalCards += instances;
-    const myWinNumsCount = card.getWinningNumberCount();
-    for (let i = 0; i < myWinNumsCount; i++) {
-      if (copiesArr[i] !== undefined) {
-        copiesArr[i] += instances;
-      } else {
-        copiesArr.push(instances);
-      }
-    }
-  }
-  return totalCards;
+  const [sum] = cards
+    .map((card) => card.getWinningNumberCount())
+    .reduce(
+      ([sum, arr], wnCount) => {
+        const instances = 1 + (arr[0] ?? 0);
+        const nextArr: number[] = new Array(Math.max(wnCount, arr.length - 1))
+          .fill(0)
+          .map((_, i) => {
+            if (i < wnCount) {
+              return instances + (arr[i + 1] ?? 0);
+            } else {
+              return arr[i + 1];
+            }
+          });
+        return [sum + instances, nextArr];
+      },
+      [0, []] as [number, number[]]
+    );
+  return sum;
 }
