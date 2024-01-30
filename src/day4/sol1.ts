@@ -1,28 +1,34 @@
 import { getLines } from '../utils.js';
 
 class Card {
-  constructor(
-    public readonly winningNumbers: readonly number[],
-    public readonly numbers: readonly number[]
-  ) {}
+  constructor(public winningNumbers: number[], public numbers: number[]) {}
 
   getWorth(): number {
     const wnCount = this.getWinningNumberCount();
-    return wnCount > 0 ? Math.pow(2, wnCount - 1) : 0;
+    if (wnCount > 0) {
+      return Math.pow(2, wnCount - 1);
+    }
+    return 0;
   }
 
   getWinningNumberCount(): number {
-    return this.numbers.filter((n) =>
-      this.winningNumbers.some((wn) => wn === n)
-    ).length;
+    let count = 0;
+    for (const n of this.numbers) {
+      for (const wn of this.winningNumbers) {
+        if (n === wn) {
+          count++;
+        }
+      }
+    }
+    return count;
   }
 }
 
 main();
 
 function main() {
-  // const filePath = process.cwd() + '/src/day4/test-input.txt'; // 13 30
-  const filePath = process.cwd() + '/src/day4/input.txt'; // 23673 12263631
+  const filePath = process.cwd() + '/src/day4/test-input.txt'; // 13 30
+  // const filePath = process.cwd() + '/src/day4/input.txt'; // 23673 12263631
 
   const lines = getLines(filePath);
   const cards = getCards(lines);
@@ -38,14 +44,14 @@ function main() {
   console.timeEnd('partTwo');
 }
 
-function getCards(lines: readonly string[]): readonly Card[] {
+function getCards(lines: string[]): Card[] {
   return lines.map((line) => {
-    const [wnStr, nStr] = line.split(':')[1].split('|');
-    const wn = wnStr
+    const [swn, sn] = line.split(':')[1].split('|');
+    const wn = swn
       .trim()
       .split(' ')
       .map((s) => parseInt(s));
-    const n = nStr
+    const n = sn
       .trimStart()
       .split(' ')
       .map((s) => parseInt(s));
@@ -53,28 +59,28 @@ function getCards(lines: readonly string[]): readonly Card[] {
   });
 }
 
-function partOne(cards: readonly Card[]): number {
-  return cards.reduce((s, card) => s + card.getWorth(), 0);
+function partOne(cards: Card[]): number {
+  let sum = 0;
+  for (const card of cards) {
+    sum += card.getWorth();
+  }
+  return sum;
 }
 
-function partTwo(cards: readonly Card[]): number {
-  const [sum] = cards
-    .map((card) => card.getWinningNumberCount())
-    .reduce(
-      ([sum, arr], wnCount) => {
-        const instances = 1 + (arr[0] ?? 0);
-        const nextArr: number[] = new Array(Math.max(wnCount, arr.length - 1))
-          .fill(0)
-          .map((_, i) => {
-            if (i < wnCount) {
-              return instances + (arr[i + 1] ?? 0);
-            } else {
-              return arr[i + 1];
-            }
-          });
-        return [sum + instances, nextArr];
-      },
-      [0, []] as [number, number[]]
-    );
+function partTwo(cards: Card[]): number {
+  const copiesArr: number[] = [];
+  let sum = 0;
+  for (const card of cards) {
+    const instances = 1 + (copiesArr.shift() ?? 0);
+    const wnCount = card.getWinningNumberCount();
+    for (let i = 0; i < wnCount; i++) {
+      if (i < copiesArr.length) {
+        copiesArr[i] += instances;
+      } else {
+        copiesArr.push(instances);
+      }
+    }
+    sum += instances;
+  }
   return sum;
 }
