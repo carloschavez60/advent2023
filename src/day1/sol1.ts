@@ -32,7 +32,7 @@ function main() {
   console.timeEnd('partTwo');
 }
 
-function partOne(lines: readonly string[]): number {
+function partOne(lines: string[]): number {
   let sum = 0;
   for (const line of lines) {
     sum += getCalibrationValue(line);
@@ -41,29 +41,34 @@ function partOne(lines: readonly string[]): number {
 }
 
 function getCalibrationValue(line: string): number {
-  let firstDigit: string | undefined;
-  let lastDigit: string | undefined;
+  let firstDigit: number | undefined;
+  let lastDigit: number | undefined;
   let firstDigitWasCatched = false;
   for (const char of line) {
-    if (isNumber(char)) {
-      lastDigit = char;
+    const n = toNumber(char);
+    if (n !== undefined) {
+      lastDigit = n;
       if (!firstDigitWasCatched) {
-        firstDigit = char;
+        firstDigit = n;
         firstDigitWasCatched = true;
       }
     }
   }
   if (firstDigit !== undefined && lastDigit !== undefined) {
-    return parseInt(firstDigit + lastDigit);
+    return firstDigit * 10 + lastDigit;
   }
   return 0;
 }
 
-function isNumber(char: string): boolean {
-  return !isNaN(parseInt(char));
+function toNumber(char: string): number | undefined {
+  const r = parseInt(char);
+  if (!isNaN(r)) {
+    return r;
+  }
+  return undefined;
 }
 
-function partTwo(lines: readonly string[]): number {
+function partTwo(lines: string[]): number {
   let sum = 0;
   for (const line of lines) {
     sum += getPartTwoCalibrationValue(line);
@@ -77,12 +82,7 @@ function getPartTwoCalibrationValue(line: string): number {
   let firstDigitWasCatched = false;
   for (let x = 0; x < line.length; x++) {
     const char = line[x];
-    let n: number | undefined;
-    if (isNumber(char)) {
-      n = parseInt(char);
-    } else {
-      n = getSpelledNumber(x, line);
-    }
+    const n = toNumber(char) ?? getSpelledNumber(x, line);
     if (n !== undefined) {
       lastDigit = n;
       if (!firstDigitWasCatched) {
