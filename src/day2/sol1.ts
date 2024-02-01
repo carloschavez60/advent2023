@@ -7,49 +7,54 @@ const config = {
 } as const;
 
 class Game {
-  constructor(public gameID: string, public sets: CubeSet[]) {}
+  gameID: string;
+  sets: { [color: string]: number }[];
+
+  constructor(gameID: string, sets: { [color: string]: number }[]) {
+    this.gameID = gameID;
+    this.sets = sets;
+  }
 
   isPossible(): boolean {
-    let is = true;
     for (const set of this.sets) {
-      if (
-        set.red > config.red ||
-        set.green > config.green ||
-        set.blue > config.blue
-      ) {
-        is = false;
-        break;
+      for (const color in set) {
+        if (set[color] > config[color as keyof typeof config]) {
+          return false;
+        }
       }
     }
-    return is;
+    return true;
   }
 
   getMinSetPower(): number {
     const minSet = this.#getMinSet();
-    return minSet.red * minSet.green * minSet.blue;
+    let prod = 1;
+    for (const color in minSet) {
+      prod *= minSet[color];
+    }
+    return prod;
   }
 
-  #getMinSet(): CubeSet {
-    const minSet = this.sets[0];
-    for (let i = 1; i < this.sets.length; i++) {
-      const set = this.sets[i];
-      minSet.red = Math.max(set.red, minSet.red);
-      minSet.green = Math.max(set.green, minSet.green);
-      minSet.blue = Math.max(set.blue, minSet.blue);
+  #getMinSet(): { [color: string]: number } {
+    const minSet: { [color: string]: number } = {
+      red: 0,
+      green: 0,
+      blue: 0,
+    };
+    for (const set of this.sets) {
+      for (const color in set) {
+        minSet[color] = Math.max(minSet[color], set[color]);
+      }
     }
     return minSet;
   }
 }
 
-class CubeSet {
-  constructor(public red: number, public green: number, public blue: number) {}
-}
-
 main();
 
 function main() {
-  const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
-  // const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
+  // const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
+  const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
 
   const lines = getLines(filePath);
   const games = getGames(lines);
@@ -72,16 +77,12 @@ function getGames(lines: string[]): Game[] {
     const sets = setsAsString.split(';').map((setAsString) => {
       const subsets = setAsString
         .split(',')
-        .reduce((acc: { [color: string]: number }, subsetAsString) => {
+        .reduce((subsets: { [color: string]: number }, subsetAsString) => {
           const [cubeCount, cubeColor] = subsetAsString.trimStart().split(' ');
-          acc[cubeColor] = parseInt(cubeCount);
-          return acc;
+          subsets[cubeColor] = parseInt(cubeCount);
+          return subsets;
         }, {});
-      return new CubeSet(
-        subsets.red ?? 0,
-        subsets.green ?? 0,
-        subsets.blue ?? 0
-      );
+      return subsets;
     });
     return new Game(gameID, sets);
   });
