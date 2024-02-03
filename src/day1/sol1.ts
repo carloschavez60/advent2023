@@ -45,8 +45,8 @@ function getCalibrationValue(line: string): number {
   let lastDigit: number | undefined;
   let firstDigitWasCatched = false;
   for (const char of line) {
-    const n = toNumber(char);
-    if (n !== undefined) {
+    const n = parseInt(char);
+    if (!isNaN(n)) {
       lastDigit = n;
       if (!firstDigitWasCatched) {
         firstDigit = n;
@@ -58,14 +58,6 @@ function getCalibrationValue(line: string): number {
     return 0;
   }
   return firstDigit * 10 + lastDigit;
-}
-
-function toNumber(char: string): number | undefined {
-  const r = parseInt(char);
-  if (!isNaN(r)) {
-    return r;
-  }
-  return undefined;
 }
 
 function sumCalibrationValues2(lines: string[]): number {
@@ -82,7 +74,11 @@ function getPartTwoCalibrationValue(line: string): number {
   let firstDigitWasCatched = false;
   for (let x = 0; x < line.length; x++) {
     const char = line[x];
-    const n = toNumber(char) ?? findSpelledNumber(x, line);
+    let n: number | undefined;
+    n = parseInt(char);
+    if (isNaN(n)) {
+      n = findSpelledNumber(x, line);
+    }
     if (n !== undefined) {
       lastDigit = n;
       if (!firstDigitWasCatched) {
