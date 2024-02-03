@@ -12,18 +12,6 @@ class StringNumber {
   }
 }
 
-class MapNumber {
-  value: number;
-  x: number;
-  y: number;
-
-  constructor(value: number, x: number, y: number) {
-    this.value = value;
-    this.x = x;
-    this.y = y;
-  }
-}
-
 main();
 
 function main() {
@@ -70,7 +58,7 @@ function sumGearRatios(lines: string[]): number {
   for (let y = 1; y < lines.length - 1; y++) {
     let x = 0;
     while (x < lineLen) {
-      if (lines[y][x] === '*') {
+      if (isAsterisk(lines[y][x])) {
         gearRatiosSum += getGearRatio(x, y, lines);
       }
       x++;
@@ -145,22 +133,22 @@ function getNearStringNumber(
   y: number,
   lines: string[]
 ): StringNumber {
-  let chars = lines[y][x];
+  let number = lines[y][x];
   let numX = x;
 
   let i = 1;
   while (isNumber(lines[y][x + i])) {
-    chars = chars + lines[y][x + i];
+    number = number + lines[y][x + i];
     i++;
   }
   i = 1;
   while (isNumber(lines[y][x - i])) {
-    chars = lines[y][x - i] + chars;
+    number = lines[y][x - i] + number;
     numX--;
     i++;
   }
 
-  return new StringNumber(chars, numX, y);
+  return new StringNumber(number, numX, y);
 }
 
 function isNumber(char: string): boolean {
@@ -195,5 +183,13 @@ function isPartNumber(stringNumber: StringNumber, lines: string[]): boolean {
  * knowing that char is not a number
  */
 function isSymbol(char: string): boolean {
-  return char !== undefined && char !== '.';
+  return char !== undefined && !isDot(char);
+}
+
+function isDot(char: string): boolean {
+  return char === '.';
+}
+
+function isAsterisk(char: string): boolean {
+  return char === '*';
 }
