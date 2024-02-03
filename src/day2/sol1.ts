@@ -1,4 +1,4 @@
-import { getLines } from '../utils.js';
+import { readFileLinesWithoutLastLine } from '../utils.js';
 
 const config = {
   red: 12,
@@ -56,7 +56,7 @@ function main() {
   // const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
   const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
 
-  const lines = getLines(filePath);
+  const lines = readFileLinesWithoutLastLine(filePath);
   const games = getGames(lines);
 
   console.time('partOne');
