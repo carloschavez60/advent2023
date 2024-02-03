@@ -1,39 +1,44 @@
 import { readFileLines } from '../utils.js';
 
-class StringNumber {
-  value: string;
+class MapNumber {
+  value: number;
+  length: number;
   x: number;
   y: number;
 
-  constructor(value: string, x: number, y: number) {
+  constructor(value: number, length: number, x: number, y: number) {
     this.value = value;
+    this.length = length;
     this.x = x;
     this.y = y;
   }
-}
 
-class MapNumber {
-  value: number;
-  x: number;
-  y: number;
+  isPartNumber(lines: string[]): boolean {
+    const { length, x, y } = this;
+    const prevLine = lines[y - 1];
+    const curLine = lines[y];
+    const nextLine = lines[y + 1];
 
-  constructor(value: number, x: number, y: number) {
-    this.value = value;
-    this.x = x;
-    this.y = y;
+    if (isSymbol(curLine[x - 1]) || isSymbol(curLine[x + length])) {
+      return true;
+    }
+    for (let k = x - 1; k <= x + length; k++) {
+      if (isSymbol(prevLine[k]) || isSymbol(nextLine[k])) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
 main();
 
 function main() {
-  const filePath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
-  // const filePath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
+  // const filePath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
+  const filePath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
 
   const lines = readFileLines(filePath);
-  const ghostLine = ''.padStart(lines[0].length, '.');
-  lines.unshift(ghostLine);
-  lines.push(ghostLine);
+  fillEdges(lines);
 
   console.time('partOne');
   const partNumberSum = sumPartNumbers(lines);
@@ -46,154 +51,114 @@ function main() {
   console.timeEnd('partTwo');
 }
 
+function fillEdges(lines: string[]) {
+  const ghostLine = ''.padStart(lines[0].length + 2, '.');
+  lines.unshift(ghostLine);
+  lines.push(ghostLine);
+  for (let y = 1; y < lines.length - 1; y++) {
+    lines[y] = '.' + lines[y] + '.';
+  }
+}
+
 function sumPartNumbers(lines: string[]): number {
   let sum = 0;
   for (let y = 1; y < lines.length - 1; y++) {
-    let x = 0;
-    while (x < lines[y].length) {
-      if (isNumber(lines[y][x])) {
-        const sn = getNearStringNumber(x, y, lines);
-        x += sn.value.length; // knowing nearNumber.x === x
-        if (isPartNumber(sn, lines)) {
-          sum += parseInt(sn.value);
+    for (let x = 1; x < lines[y].length - 1; x++) {
+      const sn = findNearMapNumber(x, y, lines);
+      if (sn !== undefined) {
+        x += sn.length;
+        if (sn.isPartNumber(lines)) {
+          sum += sn.value;
         }
       }
-      x++;
     }
   }
   return sum;
 }
 
-function sumGearRatios(lines: string[]): number {
-  const lineLen = lines[0].length;
-  let gearRatiosSum = 0;
-  for (let y = 1; y < lines.length - 1; y++) {
-    let x = 0;
-    while (x < lineLen) {
-      if (lines[y][x] === '*') {
-        gearRatiosSum += getGearRatio(x, y, lines);
-      }
-      x++;
-    }
-  }
-  return gearRatiosSum;
-}
-
-function getGearRatio(x: number, y: number, lines: string[]): number {
-  const partNumbers: StringNumber[] = [];
-  let numbersCount = 0;
-
-  if (isNumber(lines[y][x - 1])) {
-    const leftNumber = getNearStringNumber(x - 1, y, lines);
-    numbersCount++;
-    if (isPartNumber(leftNumber, lines)) {
-      partNumbers.push(leftNumber);
-    }
-  }
-
-  if (isNumber(lines[y][x + 1])) {
-    const rightNumber = getNearStringNumber(x + 1, y, lines);
-    numbersCount++;
-    if (isPartNumber(rightNumber, lines)) {
-      partNumbers.push(rightNumber);
-    }
-  }
-
-  let k = x - 1;
-  while (k <= x + 1) {
-    if (isNumber(lines[y - 1][k])) {
-      const nearNumber = getNearStringNumber(k, y - 1, lines);
-      k = nearNumber.x + nearNumber.value.length - 1;
-      numbersCount++;
-      if (isPartNumber(nearNumber, lines)) {
-        partNumbers.push(nearNumber);
-      }
-    }
-    k++;
-  }
-
-  k = x - 1;
-  while (k <= x + 1) {
-    if (isNumber(lines[y + 1][k])) {
-      const nearNumber = getNearStringNumber(k, y + 1, lines);
-      k = nearNumber.x + nearNumber.value.length - 1;
-      numbersCount++;
-      if (isPartNumber(nearNumber, lines)) {
-        partNumbers.push(nearNumber);
-      }
-    }
-    k++;
-  }
-
-  let gearRatio = 0;
-  if (partNumbers.length === 2) {
-    gearRatio = parseInt(partNumbers[0].value) * parseInt(partNumbers[1].value);
-  }
-  // print gear info
-  // console.log(
-  //   `pos: ${x} ${y}, numbersCount: ${numbersCount}, partNumbersCount: ${partNumbers.length}`
-  // );
-  // console.log(partNumbers);
-  return gearRatio;
-}
-
-/**
- * Knowing isNumber(lines[y][x]) is true
- */
-function getNearStringNumber(
+function findNearMapNumber(
   x: number,
   y: number,
   lines: string[]
-): StringNumber {
-  let chars = lines[y][x];
+): MapNumber | undefined {
+  if (!isStringDigit(lines[y][x])) {
+    return undefined;
+  }
+
+  let strDigits = lines[y][x];
   let numX = x;
 
-  let i = 1;
-  while (isNumber(lines[y][x + i])) {
-    chars = chars + lines[y][x + i];
-    i++;
-  }
-  i = 1;
-  while (isNumber(lines[y][x - i])) {
-    chars = lines[y][x - i] + chars;
-    numX--;
-    i++;
+  for (let i = 1; isStringDigit(lines[y][x + i]); i++) {
+    strDigits = strDigits + lines[y][x + i];
   }
 
-  return new StringNumber(chars, numX, y);
+  for (let i = 1; isStringDigit(lines[y][x - i]); i++) {
+    strDigits = lines[y][x - i] + strDigits;
+    numX--;
+  }
+
+  return new MapNumber(parseInt(strDigits), strDigits.length, numX, y);
 }
 
-function isNumber(char: string): boolean {
+function isStringDigit(char: string): boolean {
   return !isNaN(parseInt(char));
 }
 
-function isPartNumber(stringNumber: StringNumber, lines: string[]): boolean {
-  const prevLine = lines[stringNumber.y - 1];
-  const curLine = lines[stringNumber.y];
-  const nextLine = lines[stringNumber.y + 1];
-
-  let is = false;
-  if (
-    isSymbol(curLine[stringNumber.x - 1]) ||
-    isSymbol(curLine[stringNumber.x + stringNumber.value.length])
-  ) {
-    is = true;
-  }
-  for (
-    let k = stringNumber.x - 1;
-    k <= stringNumber.x + stringNumber.value.length;
-    k++
-  ) {
-    if (isSymbol(prevLine[k]) || isSymbol(nextLine[k])) {
-      is = true;
+function sumGearRatios(lines: string[]): number {
+  let sum = 0;
+  for (let y = 1; y < lines.length - 1; y++) {
+    for (let x = 1; x < lines[y].length - 1; x++) {
+      if (lines[y][x] === '*') {
+        sum += getGearRatio(x, y, lines);
+      }
     }
   }
-  return is;
+  return sum;
 }
 
-/**
- * knowing that char is not a number
- */
+function getGearRatio(x: number, y: number, lines: string[]): number {
+  const partNumbers: MapNumber[] = [];
+
+  const leftNum = findNearMapNumber(x - 1, y, lines);
+  if (leftNum !== undefined) {
+    if (leftNum.isPartNumber(lines)) {
+      partNumbers.push(leftNum);
+    }
+  }
+
+  const rightNum = findNearMapNumber(x + 1, y, lines);
+  if (rightNum !== undefined) {
+    if (rightNum.isPartNumber(lines)) {
+      partNumbers.push(rightNum);
+    }
+  }
+
+  for (let i = x - 1; i <= x + 1; i++) {
+    const topNum = findNearMapNumber(i, y - 1, lines);
+    if (topNum !== undefined) {
+      i = topNum.x + topNum.length;
+      if (topNum.isPartNumber(lines)) {
+        partNumbers.push(topNum);
+      }
+    }
+  }
+
+  for (let i = x - 1; i <= x + 1; i++) {
+    const botNum = findNearMapNumber(i, y + 1, lines);
+    if (botNum !== undefined) {
+      i = botNum.x + botNum.length;
+      if (botNum.isPartNumber(lines)) {
+        partNumbers.push(botNum);
+      }
+    }
+  }
+
+  if (partNumbers.length !== 2) {
+    return 0;
+  }
+  return partNumbers[0].value * partNumbers[1].value;
+}
+
 function isSymbol(char: string): boolean {
-  return char !== undefined && char !== '.';
+  return char !== '.' && !isStringDigit(char);
 }
