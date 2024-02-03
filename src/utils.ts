@@ -1,9 +1,12 @@
 import { readFileSync } from 'node:fs';
 
-function readFileLinesWithoutLastLine(filePath: string): string[] {
+/**
+ * file should end with a newline.
+ */
+function readFileLines(filePath: string): string[] {
   const lines = readFileSync(filePath, 'utf8').split('\n');
   lines.pop();
   return lines;
 }
 
-export { readFileLinesWithoutLastLine };
+export { readFileLines };

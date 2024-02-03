@@ -1,4 +1,4 @@
-import { readFileLinesWithoutLastLine } from '../utils.js';
+import { readFileLines } from '../utils.js';
 
 class Card {
   constructor(public winningNumbers: number[], public numbers: number[]) {}
@@ -30,7 +30,7 @@ function main() {
   const filePath = process.cwd() + '/src/day4/test-input.txt'; // 13 30
   // const filePath = process.cwd() + '/src/day4/input.txt'; // 23673 12263631
 
-  const lines = readFileLinesWithoutLastLine(filePath);
+  const lines = readFileLines(filePath);
   const cards = getCards(lines);
 
   console.time('partOne');

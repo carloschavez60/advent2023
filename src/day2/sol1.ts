@@ -1,4 +1,4 @@
-import { readFileLinesWithoutLastLine } from '../utils.js';
+import { readFileLines } from '../utils.js';
 
 const config = {
   red: 12,
@@ -7,11 +7,11 @@ const config = {
 } as const;
 
 class Game {
-  gameID: string;
+  gameId: string;
   sets: { [color: string]: number }[];
 
-  constructor(gameID: string, sets: { [color: string]: number }[]) {
-    this.gameID = gameID;
+  constructor(gameId: string, sets: { [color: string]: number }[]) {
+    this.gameId = gameId;
     this.sets = sets;
   }
 
@@ -56,49 +56,50 @@ function main() {
   // const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
   const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
 
-  const lines = readFileLinesWithoutLastLine(filePath);
-  const games = getGames(lines);
+  const lines = readFileLines(filePath);
+  const games = convertToGames(lines);
 
   console.time('partOne');
-  const gameIdSum = partOne(games);
+  const gameIdSum = sumPossibleGameIds(games);
   console.log(gameIdSum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const setPowerSum = partTwo(games);
+  const setPowerSum = sumMinSetPowers(games);
   console.log(setPowerSum);
   console.timeEnd('partTwo');
 }
 
-function getGames(lines: string[]): Game[] {
-  return lines.map((line) => {
-    const [game, setsAsString] = line.split(':');
-    const gameID = game.split(' ')[1];
-    const sets = setsAsString.split(';').map((setAsString) => {
-      const subsets = setAsString
-        .split(',')
-        .reduce((subsets: { [color: string]: number }, subsetAsString) => {
-          const [cubeCount, cubeColor] = subsetAsString.trimStart().split(' ');
-          subsets[cubeColor] = parseInt(cubeCount);
-          return subsets;
-        }, {});
-      return subsets;
-    });
-    return new Game(gameID, sets);
-  });
+function convertToGames(lines: string[]): Game[] {
+  const games: Game[] = [];
+  for (const line of lines) {
+    const [strGameId, strSets] = line.split(':');
+    const gameId = strGameId.split(' ')[1];
+    const sets: { [color: string]: number }[] = [];
+    for (const strSet of strSets.split(';')) {
+      const subsets: { [color: string]: number } = {};
+      for (const strSubset of strSet.split(',')) {
+        const [strCubeCount, cubeColor] = strSubset.trimStart().split(' ');
+        subsets[cubeColor] = parseInt(strCubeCount);
+      }
+      sets.push(subsets);
+    }
+    games.push(new Game(gameId, sets));
+  }
+  return games;
 }
 
-function partOne(games: Game[]): number {
+function sumPossibleGameIds(games: Game[]): number {
   let sum = 0;
   for (const game of games) {
     if (game.isPossible()) {
-      sum += parseInt(game.gameID);
+      sum += parseInt(game.gameId);
     }
   }
   return sum;
 }
 
-function partTwo(games: Game[]): number {
+function sumMinSetPowers(games: Game[]): number {
   let sum = 0;
   for (const game of games) {
     sum += game.getMinSetPower();

@@ -1,4 +1,4 @@
-import { readFileLinesWithoutLastLine } from '../utils.js';
+import { readFileLines } from '../utils.js';
 
 class StringNumber {
   value: string;
@@ -18,7 +18,7 @@ function main() {
   // const filePath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
   const filePath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
 
-  const lines = readFileLinesWithoutLastLine(filePath);
+  const lines = readFileLines(filePath);
   const ghostLine = ''.padStart(lines[0].length, '.');
   lines.unshift(ghostLine);
   lines.push(ghostLine);

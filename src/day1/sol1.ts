@@ -1,4 +1,4 @@
-import { readFileLinesWithoutLastLine } from '../utils.js';
+import { readFileLines } from '../utils.js';
 
 const stringToNumber = {
   one: 1,
@@ -19,7 +19,7 @@ function main() {
   // const filePath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
   const filePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
 
-  const lines = readFileLinesWithoutLastLine(filePath);
+  const lines = readFileLines(filePath);
 
   console.time('partOne');
   const calibrationValueSum = sumCalibrationValues(lines);
