@@ -19,10 +19,12 @@ function main() {
   // const filePath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
   const filePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
   const lines = readFileLines(filePath);
+
   console.time('partOne');
   const calibrationValueSum = sumCalibrationValues(lines);
   console.log(calibrationValueSum);
   console.timeEnd('partOne');
+
   console.time('partTwo');
   const calibrationValueSum2 = sumCalibrationValues2(lines);
   console.log(calibrationValueSum2);

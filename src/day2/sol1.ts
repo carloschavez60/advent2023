@@ -55,7 +55,6 @@ main();
 function main() {
   // const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
   const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
-
   const lines = readFileLines(filePath);
   const games = convertToGames(lines);
 
@@ -77,12 +76,12 @@ function convertToGames(lines: string[]): Game[] {
     const gameId = strGameId.split(' ')[1];
     const sets: { [color: string]: number }[] = [];
     for (const strSet of strSets.split(';')) {
-      const subsets: { [color: string]: number } = {};
+      const set: { [color: string]: number } = {};
       for (const strSubset of strSet.split(',')) {
         const [strCubeCount, cubeColor] = strSubset.trimStart().split(' ');
-        subsets[cubeColor] = parseInt(strCubeCount);
+        set[cubeColor] = parseInt(strCubeCount);
       }
-      sets.push(subsets);
+      sets.push(set);
     }
     games.push(new Game(gameId, sets));
   }
