@@ -64,11 +64,11 @@ function sumPartNumbers(lines: string[]): number {
   let sum = 0;
   for (let y = 1; y < lines.length - 1; y++) {
     for (let x = 1; x < lines[y].length - 1; x++) {
-      const sn = findNearMapNumber(x, y, lines);
-      if (sn !== undefined) {
-        x += sn.length;
-        if (sn.isPartNumber(lines)) {
-          sum += sn.value;
+      const n = findNearMapNumber(x, y, lines);
+      if (n !== undefined) {
+        x += n.length;
+        if (n.isPartNumber(lines)) {
+          sum += n.value;
         }
       }
     }
