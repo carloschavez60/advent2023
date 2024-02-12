@@ -32,19 +32,19 @@ function main() {
 }
 
 function sumCalibrationValues(lines: string[]): number {
-  let sum = 0;
-  for (const line of lines) {
-    sum += getCalibrationValue(line);
+  let s = 0;
+  for (const l of lines) {
+    s += getCalibrationValue(l);
   }
-  return sum;
+  return s;
 }
 
 function getCalibrationValue(line: string): number {
   let firstDigit: number | undefined;
   let lastDigit: number | undefined;
   let catched = false;
-  for (const char of line) {
-    const n = Number(char);
+  for (const c of line) {
+    const n = Number(c);
     if (!isNaN(n)) {
       lastDigit = n;
       if (!catched) {
@@ -60,11 +60,11 @@ function getCalibrationValue(line: string): number {
 }
 
 function sumCalibrationValues2(lines: string[]): number {
-  let sum = 0;
-  for (const line of lines) {
-    sum += getCalibrationValue2(line);
+  let s = 0;
+  for (const l of lines) {
+    s += getCalibrationValue2(l);
   }
-  return sum;
+  return s;
 }
 
 function getCalibrationValue2(line: string): number {
@@ -72,8 +72,8 @@ function getCalibrationValue2(line: string): number {
   let lastDigit: number | undefined;
   let catched = false;
   for (let x = 0; x < line.length; x++) {
-    const char = line[x];
-    let n: number | undefined = Number(char);
+    const c = line[x];
+    let n: number | undefined = Number(c);
     if (isNaN(n)) {
       n = findSpelledNumber(x, line);
     }
