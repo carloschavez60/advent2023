@@ -16,9 +16,9 @@ class Game {
   }
 
   isPossible(): boolean {
-    for (const set of this.sets) {
-      for (const color in set) {
-        if (set[color] > config[color as keyof typeof config]) {
+    for (const s of this.sets) {
+      for (const c in s) {
+        if (s[c] > config[c as keyof typeof config]) {
           return false;
         }
       }
@@ -27,12 +27,12 @@ class Game {
   }
 
   getMinSetPower(): number {
-    const minSet = this.#getMinSet();
-    let prod = 1;
-    for (const color in minSet) {
-      prod *= minSet[color];
+    const ms = this.#getMinSet();
+    let p = 1;
+    for (const c in ms) {
+      p *= ms[c];
     }
-    return prod;
+    return p;
   }
 
   #getMinSet(): { [color: string]: number } {
@@ -41,9 +41,9 @@ class Game {
       green: 0,
       blue: 0,
     };
-    for (const set of this.sets) {
-      for (const color in set) {
-        minSet[color] = Math.max(minSet[color], set[color]);
+    for (const s of this.sets) {
+      for (const c in s) {
+        minSet[c] = Math.max(minSet[c], s[c]);
       }
     }
     return minSet;
@@ -55,53 +55,53 @@ main();
 function main() {
   // const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
   const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
-  const lines = readFileLines(filePath);
-  const games = toGames(lines);
+  const l = readFileLines(filePath);
+  const g = toGames(l);
 
   console.time('partOne');
-  const gameIdSum = sumPossibleGameIds(games);
-  console.log(gameIdSum);
+  const s = sumPossibleGameIds(g);
+  console.log(s);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const setPowerSum = sumMinSetPowers(games);
-  console.log(setPowerSum);
+  const s2 = sumMinSetPowers(g);
+  console.log(s2);
   console.timeEnd('partTwo');
 }
 
 function toGames(lines: string[]): Game[] {
   const games: Game[] = [];
-  for (const line of lines) {
-    const [strGameId, strSets] = line.split(':');
-    const gameId = strGameId.split(' ')[1];
+  for (const l of lines) {
+    const [sid, ssets] = l.split(':');
+    const id = sid.split(' ')[1];
     const sets: { [color: string]: number }[] = [];
-    for (const strSet of strSets.split(';')) {
+    for (const sset of ssets.split(';')) {
       const set: { [color: string]: number } = {};
-      for (const strSubset of strSet.split(',')) {
-        const [strCubeCount, cubeColor] = strSubset.trimStart().split(' ');
-        set[cubeColor] = Number(strCubeCount);
+      for (const ssubset of sset.split(',')) {
+        const [scount, color] = ssubset.trimStart().split(' ');
+        set[color] = Number(scount);
       }
       sets.push(set);
     }
-    games.push(new Game(gameId, sets));
+    games.push(new Game(id, sets));
   }
   return games;
 }
 
 function sumPossibleGameIds(games: Game[]): number {
-  let sum = 0;
-  for (const game of games) {
-    if (game.isPossible()) {
-      sum += Number(game.gameId);
+  let s = 0;
+  for (const g of games) {
+    if (g.isPossible()) {
+      s += Number(g.gameId);
     }
   }
-  return sum;
+  return s;
 }
 
 function sumMinSetPowers(games: Game[]): number {
-  let sum = 0;
-  for (const game of games) {
-    sum += game.getMinSetPower();
+  let s = 0;
+  for (const g of games) {
+    s += g.getMinSetPower();
   }
-  return sum;
+  return s;
 }
