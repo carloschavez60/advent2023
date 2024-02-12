@@ -92,9 +92,9 @@ function getCalibrationValue2(line: string): number {
 }
 
 function findSpelledNumber(index: number, line: string): number | undefined {
-  for (const str in stringToNumber) {
-    if (line.startsWith(str, index)) {
-      return stringToNumber[str as keyof typeof stringToNumber];
+  for (const s in stringToNumber) {
+    if (line.startsWith(s, index)) {
+      return stringToNumber[s as keyof typeof stringToNumber];
     }
   }
   return undefined;
