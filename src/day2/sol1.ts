@@ -56,7 +56,7 @@ function main() {
   // const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
   const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
   const lines = readFileLines(filePath);
-  const games = convertToGames(lines);
+  const games = toGames(lines);
 
   console.time('partOne');
   const gameIdSum = sumPossibleGameIds(games);
@@ -69,7 +69,7 @@ function main() {
   console.timeEnd('partTwo');
 }
 
-function convertToGames(lines: string[]): Game[] {
+function toGames(lines: string[]): Game[] {
   const games: Game[] = [];
   for (const line of lines) {
     const [strGameId, strSets] = line.split(':');
@@ -79,7 +79,7 @@ function convertToGames(lines: string[]): Game[] {
       const set: { [color: string]: number } = {};
       for (const strSubset of strSet.split(',')) {
         const [strCubeCount, cubeColor] = strSubset.trimStart().split(' ');
-        set[cubeColor] = parseInt(strCubeCount);
+        set[cubeColor] = Number(strCubeCount);
       }
       sets.push(set);
     }
@@ -92,7 +92,7 @@ function sumPossibleGameIds(games: Game[]): number {
   let sum = 0;
   for (const game of games) {
     if (game.isPossible()) {
-      sum += parseInt(game.gameId);
+      sum += Number(game.gameId);
     }
   }
   return sum;

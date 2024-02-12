@@ -37,7 +37,7 @@ function main() {
   const filePath = process.cwd() + '/src/day4/input.txt'; // 23673 12263631
 
   const lines = readFileLines(filePath);
-  const cards = convertToCards(lines);
+  const cards = toCards(lines);
 
   console.time('partOne');
   const pileWorth = sumCardWorths(cards);
@@ -50,17 +50,17 @@ function main() {
   console.timeEnd('partTwo');
 }
 
-function convertToCards(lines: string[]): Card[] {
+function toCards(lines: string[]): Card[] {
   const cards: Card[] = [];
   for (const line of lines) {
     const [swn, sn] = line.split(':')[1].split('|');
     const wn: number[] = [];
     for (const s of swn.trim().split(' ')) {
-      wn.push(parseInt(s));
+      wn.push(Number(s));
     }
     const n: number[] = [];
     for (const s of sn.trimStart().split(' ')) {
-      n.push(parseInt(s));
+      n.push(Number(s));
     }
     cards.push(new Card(wn, n));
   }

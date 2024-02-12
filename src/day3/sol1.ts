@@ -97,11 +97,11 @@ function findNearMapNumber(
     numX--;
   }
 
-  return new MapNumber(parseInt(strDigits), strDigits.length, numX, y);
+  return new MapNumber(Number(strDigits), strDigits.length, numX, y);
 }
 
 function isStringDigit(char: string): boolean {
-  return !isNaN(parseInt(char));
+  return !isNaN(Number(char));
 }
 
 function sumGearRatios(lines: string[]): number {

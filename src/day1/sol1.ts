@@ -44,7 +44,7 @@ function getCalibrationValue(line: string): number {
   let lastDigit: number | undefined;
   let catched = false;
   for (const char of line) {
-    const n = parseInt(char);
+    const n = Number(char);
     if (!isNaN(n)) {
       lastDigit = n;
       if (!catched) {
@@ -73,7 +73,7 @@ function getCalibrationValue2(line: string): number {
   let catched = false;
   for (let x = 0; x < line.length; x++) {
     const char = line[x];
-    let n: number | undefined = parseInt(char);
+    let n: number | undefined = Number(char);
     if (isNaN(n)) {
       n = findSpelledNumber(x, line);
     }
