@@ -15,19 +15,19 @@ const stringToNumber = {
 main();
 
 function main() {
-  // const filePath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
-  // const filePath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
-  const filePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
-  const lines = readFileLines(filePath);
+  // const inputPath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
+  // const inputPath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
+  const inputPath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
+  const l = readFileLines(inputPath);
 
   console.time('partOne');
-  const calibrationValueSum = sumCalibrationValues(lines);
-  console.log(calibrationValueSum);
+  const s = sumCalibrationValues(l);
+  console.log(s);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const calibrationValueSum2 = sumCalibrationValues2(lines);
-  console.log(calibrationValueSum2);
+  const s2 = sumCalibrationValues2(l);
+  console.log(s2);
   console.timeEnd('partTwo');
 }
 

@@ -53,9 +53,10 @@ class Game {
 main();
 
 function main() {
-  // const filePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
-  const filePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
-  const l = readFileLines(filePath);
+  // const inputPath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
+  const inputPath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
+
+  const l = readFileLines(inputPath);
   const g = toGames(l);
 
   console.time('partOne');

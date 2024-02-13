@@ -15,15 +15,11 @@ class MapNumber {
 
   isPartNumber(lines: string[]): boolean {
     const { length, x, y } = this;
-    const prevLine = lines[y - 1];
-    const curLine = lines[y];
-    const nextLine = lines[y + 1];
-
-    if (isSymbol(curLine[x - 1]) || isSymbol(curLine[x + length])) {
+    if (isSymbol(lines[y][x - 1]) || isSymbol(lines[y][x + length])) {
       return true;
     }
-    for (let k = x - 1; k <= x + length; k++) {
-      if (isSymbol(prevLine[k]) || isSymbol(nextLine[k])) {
+    for (let i = x - 1; i <= x + length; i++) {
+      if (isSymbol(lines[y - 1][i]) || isSymbol(lines[y + 1][i])) {
         return true;
       }
     }
@@ -34,10 +30,10 @@ class MapNumber {
 main();
 
 function main() {
-  // const filePath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
-  const filePath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
+  // const inputPath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
+  const inputPath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
 
-  const lines = readFileLines(filePath);
+  const lines = readFileLines(inputPath);
   fillEdges(lines);
 
   console.time('partOne');
@@ -64,8 +60,8 @@ function sumPartNumbers(lines: string[]): number {
   let sum = 0;
   for (let y = 1; y < lines.length - 1; y++) {
     for (let x = 1; x < lines[y].length - 1; x++) {
-      const n = findNearMapNumber(x, y, lines);
-      if (n !== undefined) {
+      if (isStringDigit(lines[y][x])) {
+        const n = getNearMapNumber(x, y, lines);
         x += n.length;
         if (n.isPartNumber(lines)) {
           sum += n.value;
@@ -76,15 +72,7 @@ function sumPartNumbers(lines: string[]): number {
   return sum;
 }
 
-function findNearMapNumber(
-  x: number,
-  y: number,
-  lines: string[]
-): MapNumber | undefined {
-  if (!isStringDigit(lines[y][x])) {
-    return undefined;
-  }
-
+function getNearMapNumber(x: number, y: number, lines: string[]): MapNumber {
   let strDigits = lines[y][x];
   let numX = x;
 
@@ -117,48 +105,54 @@ function sumGearRatios(lines: string[]): number {
 }
 
 function getGearRatio(x: number, y: number, lines: string[]): number {
-  const partNumbers: MapNumber[] = [];
-
-  const leftNum = findNearMapNumber(x - 1, y, lines);
-  if (leftNum !== undefined) {
-    if (leftNum.isPartNumber(lines)) {
-      partNumbers.push(leftNum);
+  let pn: MapNumber;
+  let count = 0;
+  if (isStringDigit(lines[y][x - 1])) {
+    const n = getNearMapNumber(x - 1, y, lines);
+    if (n.isPartNumber(lines)) {
+      count++;
+      pn = n;
     }
   }
-
-  const rightNum = findNearMapNumber(x + 1, y, lines);
-  if (rightNum !== undefined) {
-    if (rightNum.isPartNumber(lines)) {
-      partNumbers.push(rightNum);
+  if (isStringDigit(lines[y][x + 1])) {
+    const n = getNearMapNumber(x + 1, y, lines);
+    if (n.isPartNumber(lines)) {
+      count++;
+      if (count === 2) {
+        return pn!.value * n.value;
+      }
+      pn = n;
     }
   }
-
   for (let i = x - 1; i <= x + 1; i++) {
-    const topNum = findNearMapNumber(i, y - 1, lines);
-    if (topNum !== undefined) {
-      i = topNum.x + topNum.length;
-      if (topNum.isPartNumber(lines)) {
-        partNumbers.push(topNum);
+    if (isStringDigit(lines[y - 1][i])) {
+      const n = getNearMapNumber(i, y - 1, lines);
+      i = n.x + n.length;
+      if (n.isPartNumber(lines)) {
+        count++;
+        if (count === 2) {
+          return pn!.value * n.value;
+        }
+        pn = n;
       }
     }
   }
-
   for (let i = x - 1; i <= x + 1; i++) {
-    const botNum = findNearMapNumber(i, y + 1, lines);
-    if (botNum !== undefined) {
-      i = botNum.x + botNum.length;
-      if (botNum.isPartNumber(lines)) {
-        partNumbers.push(botNum);
+    if (isStringDigit(lines[y + 1][i])) {
+      const n = getNearMapNumber(i, y + 1, lines);
+      i = n.x + n.length;
+      if (n.isPartNumber(lines)) {
+        count++;
+        if (count === 2) {
+          return pn!.value * n.value;
+        }
+        pn = n;
       }
     }
   }
-
-  if (partNumbers.length !== 2) {
-    return 0;
-  }
-  return partNumbers[0].value * partNumbers[1].value;
+  return 0;
 }
 
 function isSymbol(char: string): boolean {
-  return char !== '.' && !isStringDigit(char);
+  return char !== '.';
 }
