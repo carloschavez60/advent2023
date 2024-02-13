@@ -44,11 +44,13 @@ function getCards(lines: readonly string[]): readonly Card[] {
     const wn = wnStr
       .trim()
       .split(' ')
-      .map((s) => parseInt(s));
+      .filter((s) => s !== '')
+      .map((s) => Number(s));
     const n = nStr
       .trimStart()
       .split(' ')
-      .map((s) => parseInt(s));
+      .filter((s) => s !== '')
+      .map((s) => Number(s));
     return new Card(wn, n);
   });
 }

@@ -10,11 +10,11 @@ class Card {
   }
 
   getWorth(): number {
-    const wnCount = this.countWinningNumbers();
-    if (wnCount === 0) {
+    const c = this.countWinningNumbers();
+    if (c === 0) {
       return 0;
     }
-    return 2 ** (wnCount - 1);
+    return 2 ** (c - 1);
   }
 
   countWinningNumbers(): number {
@@ -33,34 +33,38 @@ class Card {
 main();
 
 function main() {
-  // const filePath = process.cwd() + '/src/day4/test-input.txt'; // 13 30
-  const filePath = process.cwd() + '/src/day4/input.txt'; // 23673 12263631
+  // const inputPath = process.cwd() + '/src/day4/test-input.txt'; // 13 30
+  const inputPath = process.cwd() + '/src/day4/input.txt'; // 23673 12263631
 
-  const lines = readFileLines(filePath);
-  const cards = toCards(lines);
+  const l = readFileLines(inputPath);
+  const c = toCards(l);
 
   console.time('partOne');
-  const pileWorth = sumCardWorths(cards);
-  console.log(pileWorth);
+  const s = sumCardWorths(c);
+  console.log(s);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const totalCards = sumCardInstances(cards);
-  console.log(totalCards);
+  const s2 = sumCardInstances(c);
+  console.log(s2);
   console.timeEnd('partTwo');
 }
 
 function toCards(lines: string[]): Card[] {
   const cards: Card[] = [];
-  for (const line of lines) {
-    const [swn, sn] = line.split(':')[1].split('|');
+  for (const l of lines) {
+    const [swn, sn] = l.split(':')[1].split('|');
     const wn: number[] = [];
     for (const s of swn.trim().split(' ')) {
-      wn.push(Number(s));
+      if (s !== '') {
+        wn.push(Number(s));
+      }
     }
     const n: number[] = [];
     for (const s of sn.trimStart().split(' ')) {
-      n.push(Number(s));
+      if (s !== '') {
+        n.push(Number(s));
+      }
     }
     cards.push(new Card(wn, n));
   }
@@ -69,8 +73,8 @@ function toCards(lines: string[]): Card[] {
 
 function sumCardWorths(cards: Card[]): number {
   let sum = 0;
-  for (const card of cards) {
-    sum += card.getWorth();
+  for (const c of cards) {
+    sum += c.getWorth();
   }
   return sum;
 }
@@ -78,10 +82,10 @@ function sumCardWorths(cards: Card[]): number {
 function sumCardInstances(cards: Card[]): number {
   const copiesArr: number[] = [];
   let sum = 0;
-  for (const card of cards) {
+  for (const c of cards) {
     const instances = 1 + (copiesArr.shift() ?? 0);
-    const wnCount = card.countWinningNumbers();
-    for (let i = 0; i < wnCount; i++) {
+    const count = c.countWinningNumbers();
+    for (let i = 0; i < count; i++) {
       if (i < copiesArr.length) {
         copiesArr[i] += instances;
       } else {

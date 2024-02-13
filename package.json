@@ -1,23 +1,24 @@
 {
-    "type": "module",
-    "scripts": {
-        "build": "rm -r ./build/ && tsc",
-        "watch": "tsc --watch",
-        "1": "node --watch ./build/day1/sol1.js",
-        "2": "node --watch ./build/day2/sol1.js",
-        "3": "node --watch ./build/day3/sol1.js",
-        "4": "node --watch ./build/day4/sol1.js",
-        "5": "node --watch ./build/day5/sol1.js",
-        "6": "node --watch ./build/day6/sol1.js",
-        "7": "node --watch ./build/day7/sol1.js",
-        "8": "node --watch ./build/day8/sol1.js",
-        "9": "node --watch ./build/day9/sol1.js",
-        "10": "node --watch ./build/day10/sol1.js",
-        "11": "node --watch ./build/day11/sol1.js",
-        "12": "node --watch ./build/day12/sol1.js"
-    },
-    "devDependencies": {
-        "@types/node": "^20.10.4",
-        "typescript": "^5.3.3"
-    }
+  "type": "module",
+  "scripts": {
+    "build": "rm -r ./build/ && tsc",
+    "watch": "tsc --watch",
+    "1": "node --watch ./build/day1/sol1.js",
+    "2": "node --watch ./build/day2/sol1.js",
+    "3": "node --watch ./build/day3/sol1.js",
+    "4": "node --watch ./build/day4/sol1.js",
+    "4d": "node --watch ./build/day4/sol1-declarative.js",
+    "5": "node --watch ./build/day5/sol1.js",
+    "6": "node --watch ./build/day6/sol1.js",
+    "7": "node --watch ./build/day7/sol1.js",
+    "8": "node --watch ./build/day8/sol1.js",
+    "9": "node --watch ./build/day9/sol1.js",
+    "10": "node --watch ./build/day10/sol1.js",
+    "11": "node --watch ./build/day11/sol1.js",
+    "12": "node --watch ./build/day12/sol1.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "typescript": "^5.3.3"
+  }
 }
