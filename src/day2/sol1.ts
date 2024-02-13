@@ -28,11 +28,11 @@ class Game {
 
   getMinSetPower(): number {
     const ms = this.#getMinSet();
-    let p = 1;
+    let prod = 1;
     for (const c in ms) {
-      p *= ms[c];
+      prod *= ms[c];
     }
-    return p;
+    return prod;
   }
 
   #getMinSet(): { [color: string]: number } {
@@ -90,19 +90,19 @@ function toGames(lines: string[]): Game[] {
 }
 
 function sumPossibleGameIds(games: Game[]): number {
-  let s = 0;
+  let sum = 0;
   for (const g of games) {
     if (g.isPossible()) {
-      s += Number(g.gameId);
+      sum += Number(g.gameId);
     }
   }
-  return s;
+  return sum;
 }
 
 function sumMinSetPowers(games: Game[]): number {
-  let s = 0;
+  let sum = 0;
   for (const g of games) {
-    s += g.getMinSetPower();
+    sum += g.getMinSetPower();
   }
-  return s;
+  return sum;
 }

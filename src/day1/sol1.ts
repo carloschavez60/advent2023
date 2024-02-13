@@ -18,6 +18,7 @@ function main() {
   // const inputPath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
   // const inputPath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
   const inputPath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
+
   const l = readFileLines(inputPath);
 
   console.time('partOne');
@@ -32,11 +33,11 @@ function main() {
 }
 
 function sumCalibrationValues(lines: string[]): number {
-  let s = 0;
+  let sum = 0;
   for (const l of lines) {
-    s += getCalibrationValue(l);
+    sum += getCalibrationValue(l);
   }
-  return s;
+  return sum;
 }
 
 function getCalibrationValue(line: string): number {
@@ -60,11 +61,11 @@ function getCalibrationValue(line: string): number {
 }
 
 function sumCalibrationValues2(lines: string[]): number {
-  let s = 0;
+  let sum = 0;
   for (const l of lines) {
-    s += getCalibrationValue2(l);
+    sum += getCalibrationValue2(l);
   }
-  return s;
+  return sum;
 }
 
 function getCalibrationValue2(line: string): number {
