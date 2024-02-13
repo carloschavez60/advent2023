@@ -1,23 +1,12 @@
-import { readFileSync } from 'fs';
-
-type HandType =
-  | 'five of a kind'
-  | 'four of a kind'
-  | 'full house'
-  | 'three of a kind'
-  | 'two pair'
-  | 'one pair'
-  | 'high card';
+import { readFileLines } from '../utils.js';
 
 class Hand {
   value: string;
   bid: number;
-  type: HandType;
-  typeWithJokers: HandType;
   strength: number;
   strengthWithJokers: number;
 
-  readonly #decimalDigits: { [digit: string]: number } = Object.freeze({
+  #labelToCardStrength = {
     '2': 2,
     '3': 3,
     '4': 4,
@@ -31,9 +20,8 @@ class Hand {
     Q: 12,
     K: 13,
     A: 14,
-  });
-
-  readonly #decimalDigitsPartTwo: { [digit: string]: number } = Object.freeze({
+  } as const;
+  #labelToCardStrengthWithJokers = {
     J: 1,
     '2': 2,
     '3': 3,
@@ -47,48 +35,84 @@ class Hand {
     Q: 12,
     K: 13,
     A: 14,
-  });
+  } as const;
+  #labels = [
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    'T',
+    'Q',
+    'K',
+    'A',
+  ] as const;
 
   constructor(value: string, bid: number) {
     this.value = value;
     this.bid = bid;
-    this.type = this.#getType(value);
-    this.strength = this.#getStrength(value);
-    this.typeWithJokers = this.#getTypePartTwo(value);
-    this.strengthWithJokers = this.#getStrengthPartTwo(value);
+    this.strength = this.#getStrength(
+      value,
+      this.#getTypeStrength(value),
+      this.#labelToCardStrength
+    );
+    this.strengthWithJokers = this.#getStrength(
+      value,
+      this.#getTypeStrengthWithJokers(value),
+      this.#labelToCardStrengthWithJokers
+    );
   }
 
-  #getType(value: string): typeof this.type {
+  #getStrength(
+    value: string,
+    typeStrength: number,
+    labelToCardStrength: { [label: string]: number }
+  ): number {
+    const labels = value.split('');
+    let strength = 0;
+    let i = 0;
+    while (i < labels.length) {
+      strength += 15 ** i * labelToCardStrength[labels.at(-i - 1)!];
+      i++;
+    }
+    strength += 15 ** i * typeStrength;
+    return strength;
+  }
+
+  #getTypeStrength(value: string): number {
     const digits = value.split('');
-    digits.sort((a, b) => this.#decimalDigits[a] - this.#decimalDigits[b]);
+    digits.sort();
 
     if (digits[0] === digits[1]) {
       if (digits[1] === digits[2]) {
         if (digits[2] === digits[3]) {
           if (digits[3] === digits[4]) {
-            return 'five of a kind';
+            return 7;
           } else {
-            return 'four of a kind';
+            return 6;
           }
         } else {
           if (digits[3] === digits[4]) {
-            return 'full house';
+            return 5;
           } else {
-            return 'three of a kind';
+            return 4;
           }
         }
       } else {
         if (digits[2] === digits[3]) {
           if (digits[3] === digits[4]) {
-            return 'full house';
+            return 5;
           } else {
-            return 'two pair';
+            return 3;
           }
         } else {
           if (digits[3] === digits[4]) {
-            return 'two pair';
+            return 3;
           } else {
-            return 'one pair';
+            return 2;
           }
         }
       }
@@ -96,181 +120,82 @@ class Hand {
       if (digits[1] === digits[2]) {
         if (digits[2] === digits[3]) {
           if (digits[3] === digits[4]) {
-            return 'four of a kind';
+            return 6;
           } else {
-            return 'three of a kind';
+            return 4;
           }
         } else {
           if (digits[3] === digits[4]) {
-            return 'two pair';
+            return 3;
           } else {
-            return 'one pair';
+            return 2;
           }
         }
       } else {
         if (digits[2] === digits[3]) {
           if (digits[3] === digits[4]) {
-            return 'three of a kind';
+            return 4;
           } else {
-            return 'one pair';
+            return 2;
           }
         } else {
           if (digits[3] === digits[4]) {
-            return 'one pair';
+            return 2;
           } else {
-            return 'high card';
+            return 1;
           }
         }
       }
     }
   }
 
-  #getStrength(value: string): number {
-    const digits = value.split('');
-    let strength = 0;
-    for (let i = 0; i < digits.length; i++) {
-      strength += this.#decimalDigits[digits.at(-i - 1)!] * Math.pow(15, i);
+  #getTypeStrengthWithJokers(value: string): number {
+    let max = 0;
+    for (const label of this.#labels) {
+      const typeStrength = this.#getTypeStrength(value.replaceAll('J', label));
+      max = Math.max(typeStrength, max);
     }
-    return strength;
-  }
-
-  #getTypePartTwo(value: string): typeof this.typeWithJokers {
-    const handTypeStrengths: { [handType: string]: number } = Object.freeze({
-      'five of a kind': 7,
-      'four of a kind': 6,
-      'full house': 5,
-      'three of a kind': 4,
-      'two pair': 3,
-      'one pair': 2,
-      'high card': 1,
-    });
-
-    const handTypeByStrength: {
-      [handTypeStrength: number]: string;
-    } = {};
-    for (const handType in handTypeStrengths) {
-      handTypeByStrength[handTypeStrengths[handType]] = handType;
-    }
-
-    const cardLabels = [
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      'T',
-      'Q',
-      'K',
-      'A',
-    ];
-
-    let highestHandTypeStrength = 0;
-    for (const cardLabel of cardLabels) {
-      const newValue = value.replaceAll('J', cardLabel);
-      const newType = this.#getType(newValue);
-      const handTypeStrength = handTypeStrengths[newType];
-      if (handTypeStrength > highestHandTypeStrength) {
-        highestHandTypeStrength = handTypeStrength;
-      }
-    }
-
-    return handTypeByStrength[
-      highestHandTypeStrength
-    ] as typeof this.typeWithJokers;
-  }
-
-  #getStrengthPartTwo(value: string): number {
-    const digits = value.split('');
-    let strength = 0;
-    for (let i = 0; i < digits.length; i++) {
-      strength +=
-        this.#decimalDigitsPartTwo[digits.at(-i - 1)!] * Math.pow(15, i);
-    }
-    return strength;
+    return max;
   }
 }
 
-// const filePath = process.cwd() + '/src/day7/test-input.txt';
-const filePath = process.cwd() + '/src/day7/input.txt'; // 248569531 250382098
+main();
 
-const hands = getHands(filePath);
+function main() {
+  // const inputPath = process.cwd() + '/src/day7/test-input.txt';
+  const inputPath = process.cwd() + '/src/day7/input.txt'; // 248569531 250382098
 
-console.time('partOne');
-partOne(hands);
-console.timeEnd('partOne');
+  const l = readFileLines(inputPath);
+  const h = toHands(l);
 
-console.time('partTwo');
-partTwo(hands);
-console.timeEnd('partTwo');
+  console.time('partOne');
+  h.sort((a, b) => a.strength - b.strength);
+  const tw = getTotalWinnings(h);
+  console.log(tw);
+  console.timeEnd('partOne');
 
-function getHands(filePath: string): Hand[] {
-  const fileStr = readFileSync(filePath, 'utf8');
-  const lines = fileStr.split('\n');
-  lines.pop();
+  console.time('partTwo');
+  h.sort((a, b) => a.strengthWithJokers - b.strengthWithJokers);
+  const tw2 = getTotalWinnings(h);
+  console.log(tw2);
+  console.timeEnd('partTwo');
+}
 
+function toHands(lines: string[]): Hand[] {
   const hands: Hand[] = [];
-  for (const line of lines) {
-    const [value, bid] = line.split(' ');
-    hands.push(new Hand(value, +bid));
+  for (const l of lines) {
+    const [value, sbid] = l.split(' ');
+    hands.push(new Hand(value, Number(sbid)));
   }
   return hands;
 }
 
-function partOne(hands: Hand[]) {
-  const totalWinnings = getTotalWinnings(hands, 'type', 'strength');
-  console.log(totalWinnings);
-}
-
-function partTwo(hands: Hand[]) {
-  const totalWinnings = getTotalWinnings(
-    hands,
-    'typeWithJokers',
-    'strengthWithJokers'
-  );
-  console.log(totalWinnings);
-}
-
-function getTotalWinnings(
-  hands: Hand[],
-  handType: 'type' | 'typeWithJokers',
-  handStrength: 'strength' | 'strengthWithJokers'
-) {
-  const handsByType: { [handType: string]: Hand[] } = {
-    'five of a kind': [],
-    'four of a kind': [],
-    'full house': [],
-    'three of a kind': [],
-    'two pair': [],
-    'one pair': [],
-    'high card': [],
-  };
-
-  for (const hand of hands) {
-    handsByType[hand[handType]].push(hand);
+function getTotalWinnings(orderedHands: Hand[]): number {
+  let sum = 0;
+  let rank = 1;
+  for (const h of orderedHands) {
+    sum += rank * h.bid;
+    rank++;
   }
-
-  for (const type in handsByType) {
-    const hands = handsByType[type];
-    hands.sort((a, b) => a[handStrength] - b[handStrength]);
-  }
-
-  const orderedHands = [
-    ...handsByType['high card'],
-    ...handsByType['one pair'],
-    ...handsByType['two pair'],
-    ...handsByType['three of a kind'],
-    ...handsByType['full house'],
-    ...handsByType['four of a kind'],
-    ...handsByType['five of a kind'],
-  ];
-
-  let totalWinnings = 0;
-  for (let i = 0; i < orderedHands.length; i++) {
-    const hand = orderedHands[i];
-    totalWinnings += (i + 1) * hand.bid;
-  }
-  return totalWinnings;
+  return sum;
 }

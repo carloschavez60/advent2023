@@ -1,41 +1,11 @@
-import { readFileSync } from 'fs';
+import { readFileLines } from '../utils.js';
 
 class Hand {
-  readonly value: string;
-  readonly bid: number;
-  readonly strength: number;
-  readonly strengthWithJokers: number;
+  value: string;
+  bid: number;
+  strength: number;
+  strengthWithJokers: number;
 
-  #labelToCardStrength = {
-    '2': 2,
-    '3': 3,
-    '4': 4,
-    '5': 5,
-    '6': 6,
-    '7': 7,
-    '8': 8,
-    '9': 9,
-    T: 10,
-    J: 11,
-    Q: 12,
-    K: 13,
-    A: 14,
-  } as const;
-  #labelToCardStrengthWithJokers = {
-    J: 1,
-    '2': 2,
-    '3': 3,
-    '4': 4,
-    '5': 5,
-    '6': 6,
-    '7': 7,
-    '8': 8,
-    '9': 9,
-    T: 10,
-    Q: 12,
-    K: 13,
-    A: 14,
-  } as const;
   #labels = [
     '2',
     '3',
@@ -50,6 +20,38 @@ class Hand {
     'K',
     'A',
   ] as const;
+  #labelToHex = {
+    '1': '1',
+    '2': '2',
+    '3': '3',
+    '4': '4',
+    '5': '5',
+    '6': '6',
+    '7': '7',
+    '8': '8',
+    '9': '9',
+    T: 'A',
+    J: 'B',
+    Q: 'C',
+    K: 'D',
+    A: 'E',
+  } as const;
+  #labelToHexWithJokers = {
+    J: '1',
+    '1': '1',
+    '2': '2',
+    '3': '3',
+    '4': '4',
+    '5': '5',
+    '6': '6',
+    '7': '7',
+    '8': '8',
+    '9': '9',
+    T: 'A',
+    Q: 'C',
+    K: 'D',
+    A: 'E',
+  } as const;
 
   constructor(value: string, bid: number) {
     this.value = value;
@@ -57,63 +59,58 @@ class Hand {
     this.strength = this.#getStrength(
       value,
       this.#getTypeStrength(value),
-      this.#labelToCardStrength
+      this.#labelToHex
     );
     this.strengthWithJokers = this.#getStrength(
       value,
       this.#getTypeStrengthWithJokers(value),
-      this.#labelToCardStrengthWithJokers
+      this.#labelToHexWithJokers
     );
   }
 
   #getStrength(
     value: string,
-    typeStrength: number,
-    labelToCardStrength: { [label: string]: number }
+    typeStrength: string,
+    labelToHex: { [label: string]: string }
   ): number {
-    const labels = value.split('');
-
-    let strength = 0;
-    let i = 0;
-    while (i < labels.length) {
-      strength += Math.pow(15, i) * labelToCardStrength[labels.at(-i - 1)!];
-      i++;
+    const labels = typeStrength + value;
+    let hex = '';
+    for (const l of labels) {
+      hex += labelToHex[l];
     }
-    strength += Math.pow(15, i) * typeStrength;
-    return strength;
+    return parseInt(hex, 16);
   }
 
-  #getTypeStrength(value: string): number {
+  #getTypeStrength(value: string): string {
     const digits = value.split('');
     digits.sort();
-
     if (digits[0] === digits[1]) {
       if (digits[1] === digits[2]) {
         if (digits[2] === digits[3]) {
           if (digits[3] === digits[4]) {
-            return 7;
+            return '7';
           } else {
-            return 6;
+            return '6';
           }
         } else {
           if (digits[3] === digits[4]) {
-            return 5;
+            return '5';
           } else {
-            return 4;
+            return '4';
           }
         }
       } else {
         if (digits[2] === digits[3]) {
           if (digits[3] === digits[4]) {
-            return 5;
+            return '5';
           } else {
-            return 3;
+            return '3';
           }
         } else {
           if (digits[3] === digits[4]) {
-            return 3;
+            return '3';
           } else {
-            return 2;
+            return '2';
           }
         }
       }
@@ -121,94 +118,82 @@ class Hand {
       if (digits[1] === digits[2]) {
         if (digits[2] === digits[3]) {
           if (digits[3] === digits[4]) {
-            return 6;
+            return '6';
           } else {
-            return 4;
+            return '4';
           }
         } else {
           if (digits[3] === digits[4]) {
-            return 3;
+            return '3';
           } else {
-            return 2;
+            return '2';
           }
         }
       } else {
         if (digits[2] === digits[3]) {
           if (digits[3] === digits[4]) {
-            return 4;
+            return '4';
           } else {
-            return 2;
+            return '2';
           }
         } else {
           if (digits[3] === digits[4]) {
-            return 2;
+            return '2';
           } else {
-            return 1;
+            return '1';
           }
         }
       }
     }
   }
 
-  #getTypeStrengthWithJokers(value: string): number {
+  #getTypeStrengthWithJokers(value: string): string {
     let max = 0;
     for (const label of this.#labels) {
       const typeStrength = this.#getTypeStrength(value.replaceAll('J', label));
-      max = Math.max(typeStrength, max);
+      max = Math.max(Number(typeStrength), max);
     }
-    return max;
+    return String(max);
   }
 }
 
 main();
 
 function main() {
-  // const filePath = process.cwd() + '/src/day7/test-input.txt';
-  const filePath = process.cwd() + '/src/day7/input.txt'; // 248569531 250382098
+  // const inputPath = process.cwd() + '/src/day7/test-input.txt'; // 6440 5905
+  const inputPath = process.cwd() + '/src/day7/input.txt'; // 248569531 250382098
 
-  const hands = getHands(filePath);
+  const l = readFileLines(inputPath);
+  const h = toHands(l);
 
   console.time('partOne');
-  let totalWinnings = partOne(hands);
-  console.log(totalWinnings);
+  h.sort((a, b) => a.strength - b.strength);
+  const tw = getTotalWinnings(h);
+  console.log(tw);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  totalWinnings = partTwo(hands);
-  console.log(totalWinnings);
+  h.sort((a, b) => a.strengthWithJokers - b.strengthWithJokers);
+  const tw2 = getTotalWinnings(h);
+  console.log(tw2);
   console.timeEnd('partTwo');
 }
 
-function getHands(filePath: string): readonly Hand[] {
-  const fileStr = readFileSync(filePath, 'utf8');
-  const lines = fileStr.split('\n');
-  lines.pop();
-
+function toHands(lines: string[]): Hand[] {
   const hands: Hand[] = [];
-  for (const line of lines) {
-    const [value, bid] = line.split(' ');
-    hands.push(new Hand(value, +bid));
+  for (const l of lines) {
+    const [value, sbid] = l.split(' ');
+    hands.push(new Hand(value, Number(sbid)));
   }
   return hands;
 }
 
-function partOne(hands: readonly Hand[]): number {
-  const orderedHands = [...hands];
-  orderedHands.sort((a, b) => a.strength - b.strength);
-  return getTotalWinnings(orderedHands);
-}
-
-function partTwo(hands: readonly Hand[]): number {
-  const orderedHands = [...hands];
-  orderedHands.sort((a, b) => a.strengthWithJokers - b.strengthWithJokers);
-  return getTotalWinnings(orderedHands);
-}
-
-function getTotalWinnings(orderedHands: readonly Hand[]): number {
+function getTotalWinnings(orderedHands: Hand[]): number {
   let sum = 0;
-  for (let i = 0; i < orderedHands.length; i++) {
-    const hand = orderedHands[i];
-    sum += (i + 1) * hand.bid;
+  let rank = 1;
+  for (const h of orderedHands) {
+    sum += rank * h.bid;
+    rank++;
   }
   return sum;
 }
