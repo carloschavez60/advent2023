@@ -76,25 +76,23 @@ function sumExtrapolatedValues2(histories: number[][]): number {
 }
 
 function extrapolatePrevValue(history: number[]): number {
-  const subhistories: number[][] = [];
+  let sum = history[0];
   let cur = history;
-  while (true) {
+  for (let i = 0; true; i++) {
     const subhistory: number[] = [];
-    for (let i = 0; i < cur.length - 1; i++) {
-      const num = cur[i + 1] - cur[i];
+    for (let j = 0; j < cur.length - 1; j++) {
+      const num = cur[j + 1] - cur[j];
       subhistory.push(num);
     }
     if (areZeroes(subhistory)) {
       break;
     }
-    subhistories.push(subhistory);
+    if (i % 2 === 0) {
+      sum -= subhistory[0];
+    } else {
+      sum += subhistory[0];
+    }
     cur = subhistory;
   }
-  let prev = 0;
-  for (let i = subhistories.length - 1; i >= 0; i--) {
-    const s = subhistories[i];
-    prev = s[0] - prev;
-  }
-  prev = history[0] - prev;
-  return prev;
+  return sum;
 }
