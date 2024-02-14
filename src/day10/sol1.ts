@@ -1,30 +1,35 @@
 import { readFileSync, writeFileSync } from 'fs';
 
-const charConverter = Object.freeze({
+const charConverter = {
   '|': '║',
   '-': '═',
   L: '╚',
   J: '╝',
   '7': '╗',
   F: '╔',
-});
+} as const;
 
-// const filePath = process.cwd() + '/src/day10/test-input.txt';
-let filePath = process.cwd() + '/src/day10/input.txt';
+main();
 
-const fileStr = readNewFile(filePath);
-// console.log(fileStr);
+function main() {
+  // const filePath = process.cwd() + '/src/day10/test-input.txt'; // 8
+  const filePath = process.cwd() + '/src/day10/part-two-test-input.txt'; //
+  // let filePath = process.cwd() + '/src/day10/input.txt'; // 6682
 
-const lines = fileStr.split('\n');
-lines.pop();
+  const fileStr = readNewFile(filePath);
+  // console.log(fileStr);
 
-console.time('partOne');
-partOne(lines);
-console.timeEnd('partOne');
+  const lines = fileStr.split('\n');
+  lines.pop();
 
-// console.time('partTwo');
-// partTwo(histories);
-// console.timeEnd('partTwo');
+  console.time('partOne');
+  partOne(lines);
+  console.timeEnd('partOne');
+
+  // console.time('partTwo');
+  // partTwo(histories);
+  // console.timeEnd('partTwo');
+}
 
 function readNewFile(filePath: string): string {
   const fileName = filePath.split('/').at(-1)!;
@@ -33,7 +38,7 @@ function readNewFile(filePath: string): string {
 
   try {
     return readFileSync(newFilePath, 'utf8');
-  } catch (err) {
+  } catch {
     const fileStr = readFileSync(filePath, 'utf8');
 
     let newFileStr = fileStr;
@@ -90,7 +95,7 @@ function partOne(lines: string[]) {
   console.log(step / 2);
 }
 
-function getStartPosition(lines: string[]) {
+function getStartPosition(lines: string[]): { x: number; y: number } {
   let startPosX = 0;
   let startPosY = 0;
   for (let y = 0; y < lines.length; y++) {
@@ -105,6 +110,7 @@ function getStartPosition(lines: string[]) {
       };
     }
   }
+  throw new Error('S not found in input file');
 }
 
 function isValidPipe(
