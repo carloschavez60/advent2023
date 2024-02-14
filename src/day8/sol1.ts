@@ -1,106 +1,105 @@
-import { readFileSync } from 'fs';
+import { readFileLines } from '../utils.js';
+
+const instructionToNodeId = {
+  L: 'leftId',
+  R: 'rightId',
+} as const;
 
 class Node {
   readonly id: string;
-  readonly leftNodeId: string;
-  readonly rightNodeId: string;
+  readonly leftId: string;
+  readonly rightId: string;
 
   constructor(id: string, leftNodeId: string, rightNodeId: string) {
     this.id = id;
-    this.leftNodeId = leftNodeId;
-    this.rightNodeId = rightNodeId;
+    this.leftId = leftNodeId;
+    this.rightId = rightNodeId;
   }
 }
 
-// const filePath = process.cwd() + '/src/day8/test-input.txt';
-// const filePath = process.cwd() + '/src/day8/test-input-part-two.txt';
-const filePath = process.cwd() + '/src/day8/input.txt'; // 16343 15299095336639
+main();
 
-const [instructions, nodes] = getInstructionsAndNodes(filePath);
+function main() {
+  // const inputPath = process.cwd() + '/src/day8/test-input.txt'; // 6 6
+  // const inputPath = process.cwd() + '/src/day8/part-two-test-input.txt'; // X 6
+  const inputPath = process.cwd() + '/src/day8/input.txt'; // 16343 15299095336639
 
-const nodeById = nodes.reduce((acc: { [id: string]: Node }, node) => {
-  acc[node.id] = node;
-  return acc;
-}, {});
+  const l = readFileLines(inputPath);
+  const [i, n] = toInstructionsAndNodes(l);
 
-console.time('partOne');
-partOne(instructions, nodeById);
-console.timeEnd('partOne');
+  console.time('partOne');
+  const c = countSteps(i, n);
+  console.log(c);
+  console.timeEnd('partOne');
 
-console.time('partTwo');
-partTwo(instructions, nodeById);
-console.timeEnd('partTwo');
+  console.time('partTwo');
+  const c2 = countTotalSteps(i, n);
+  console.log(c2);
+  console.timeEnd('partTwo');
+}
 
-function getInstructionsAndNodes(filePath: string): [string, Node[]] {
-  const lines = readFileSync(filePath, 'utf8').split('\n');
+function toInstructionsAndNodes(
+  lines: string[]
+): [string, { [id: string]: Node }] {
   const instructions = lines.shift()!;
-  lines.shift();
-  lines.pop();
-
-  const nodes: Node[] = [];
-  for (const line of lines) {
-    const [id, str] = line.split(' = ');
-    const [leftNodeId, rightNodeId] = str.slice(1, -1).split(', ');
-    nodes.push(new Node(id, leftNodeId, rightNodeId));
+  lines.shift()!;
+  const nodes: { [id: string]: Node } = {};
+  for (const l of lines) {
+    const [id, s] = l.split(' = ');
+    const [leftNodeId, rightNodeId] = s.slice(1, -1).split(', ');
+    nodes[id] = new Node(id, leftNodeId, rightNodeId);
   }
   return [instructions, nodes];
 }
 
-function partOne(instructions: string, nodeById: { [id: string]: Node }) {
-  const nodeIdByInstruction: {
-    [instruction: string]: 'leftNodeId' | 'rightNodeId';
-  } = Object.freeze({
-    L: 'leftNodeId',
-    R: 'rightNodeId',
-  });
-
-  let step = 0;
-  let curNodeId = 'AAA';
-  while (curNodeId !== 'ZZZ') {
-    const instruction = instructions[step % instructions.length];
-    const curNode = nodeById[curNodeId];
-
-    curNodeId = curNode[nodeIdByInstruction[instruction]];
-    step++;
+function countSteps(instructions: string, nodes: { [id: string]: Node }) {
+  let count = 0;
+  let id = 'AAA';
+  while (id !== 'ZZZ') {
+    const instruction = instructions[count % instructions.length] as 'L' | 'R';
+    count++;
+    const node = nodes[id];
+    id = node[instructionToNodeId[instruction]];
   }
-
-  console.log(step);
+  return count;
 }
 
-function partTwo(instructions: string, nodeById: { [id: string]: Node }) {
-  const nodeIdByInstruction: {
-    [instruction: string]: 'leftNodeId' | 'rightNodeId';
-  } = Object.freeze({
-    L: 'leftNodeId',
-    R: 'rightNodeId',
-  });
-  const aNodeIds = getANodes(nodeById);
-
-  const nodeSteps: number[] = [];
-  for (const aNodeId of aNodeIds) {
-    let step = 0;
-    let curNodeId = aNodeId;
-    while (!isZNodeId(curNodeId)) {
-      const instruction = instructions[step % instructions.length];
-      const curNode = nodeById[curNodeId];
-
-      curNodeId = curNode[nodeIdByInstruction[instruction]];
-      step++;
-    }
-    nodeSteps.push(step);
+function countTotalSteps(instructions: string, nodes: { [id: string]: Node }) {
+  const aNodeIds = getANodes(nodes);
+  const steps: number[] = [];
+  for (const id of aNodeIds) {
+    const c = countSteps2(id, instructions, nodes);
+    steps.push(c);
   }
-  // console.log(nodeSteps);
-
-  let lcmValue = lcm(nodeSteps[0], nodeSteps[1]);
-  for (let i = 2; i < nodeSteps.length; i++) {
-    lcmValue = lcm(lcmValue, nodeSteps[i]);
+  if (steps.length === 1) {
+    return steps[0];
   }
-  console.log(lcmValue);
+  let count = lcm(steps[0], steps[1]);
+  for (let i = 2; i < steps.length; i++) {
+    count = lcm(count, steps[i]);
+  }
+  return count;
 }
 
-function getANodes(nodeById: { [id: string]: Node }): string[] {
+function countSteps2(
+  nodeId: string,
+  instructions: string,
+  nodes: { [id: string]: Node }
+): number {
+  let count = 0;
+  let id = nodeId;
+  while (!isZNodeId(id)) {
+    const instruction = instructions[count % instructions.length] as 'L' | 'R';
+    count++;
+    const node = nodes[id];
+    id = node[instructionToNodeId[instruction]];
+  }
+  return count;
+}
+
+function getANodes(nodes: { [id: string]: Node }): string[] {
   const aNodeIds: string[] = [];
-  for (const id in nodeById) {
+  for (const id in nodes) {
     if (id.slice(-1) === 'A') {
       aNodeIds.push(id);
     }
@@ -108,23 +107,20 @@ function getANodes(nodeById: { [id: string]: Node }): string[] {
   return aNodeIds;
 }
 
-function isZNodeId(nodeId: string): boolean {
-  if (nodeId.slice(-1) === 'Z') {
+function isZNodeId(id: string): boolean {
+  if (id.slice(-1) === 'Z') {
     return true;
   }
   return false;
 }
 
 function lcm(a: number, b: number): number {
-  const gcdValue = gcd(a, b);
-  return (a * b) / gcdValue;
+  return (a * b) / gcd(a, b);
 }
 
 function gcd(a: number, b: number): number {
-  for (let temp = b; b !== 0; ) {
-    b = a % b;
-    a = temp;
-    temp = b;
+  while (b !== 0) {
+    [a, b] = [b, a % b];
   }
   return a;
 }
