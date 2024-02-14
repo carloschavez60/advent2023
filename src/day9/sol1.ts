@@ -1,85 +1,100 @@
-import { readFileSync } from 'fs';
+import { readFileLines } from '../utils.js';
 
-// const filePath = process.cwd() + '/src/day9/test-input.txt';
-const filePath = process.cwd() + '/src/day9/input.txt'; // 1898776583 1100
+main();
 
-const histories: number[][] = getHistories(filePath);
+function main() {
+  // const inputPath = process.cwd() + '/src/day9/test-input.txt'; // 114 2
+  const inputPath = process.cwd() + '/src/day9/input.txt'; // 1898776583 1100
 
-console.time('partOne');
-partOne(histories);
-console.timeEnd('partOne');
+  const l = readFileLines(inputPath);
+  const h = toHistories(l);
 
-console.time('partTwo');
-partTwo(histories);
-console.timeEnd('partTwo');
+  console.time('partOne');
+  const s = sumExtrapolatedValues(h);
+  console.log(s);
+  console.timeEnd('partOne');
 
-function getHistories(filePath: string): number[][] {
-  const lines = readFileSync(filePath, 'utf8').split('\n');
-  lines.pop();
-  return lines.map((line) => {
-    return line.split(' ').map((x) => +x);
-  });
+  console.time('partTwo');
+  const s2 = sumExtrapolatedValues2(h);
+  console.log(s2);
+  console.timeEnd('partTwo');
 }
 
-function partOne(histories: number[][]) {
-  let extrapolatedValuesSum = 0;
-  for (const history of histories) {
-    const subhistories: number[][] = [];
-
-    let curSubhistory: number[] = history;
-    while (!areZeroes(curSubhistory)) {
-      const subhistory: number[] = [];
-      for (let i = 0; i < curSubhistory.length - 1; i++) {
-        const num = curSubhistory[i + 1] - curSubhistory[i];
-        subhistory.push(num);
-      }
-      subhistories.push(subhistory);
-      curSubhistory = subhistory;
+function toHistories(lines: string[]): number[][] {
+  const histories: number[][] = [];
+  for (const l of lines) {
+    const history: number[] = [];
+    for (const s of l.split(' ')) {
+      history.push(Number(s));
     }
-
-    const nextValue = subhistories.reduce(
-      (acc, subhistory) => acc + subhistory.at(-1)!,
-      history.at(-1)!
-    );
-
-    extrapolatedValuesSum += nextValue;
+    histories.push(history);
   }
-  console.log(extrapolatedValuesSum);
+  return histories;
+}
+
+function sumExtrapolatedValues(histories: number[][]): number {
+  let sum = 0;
+  for (const h of histories) {
+    sum += extrapolateNextValue(h);
+  }
+  return sum;
+}
+
+function extrapolateNextValue(history: number[]): number {
+  let sum = history.at(-1)!;
+  let cur = history;
+  while (true) {
+    const subhistory: number[] = [];
+    for (let i = 0; i < cur.length - 1; i++) {
+      const n = cur[i + 1] - cur[i];
+      subhistory.push(n);
+    }
+    if (areZeroes(subhistory)) {
+      break;
+    }
+    sum += subhistory.at(-1)!;
+    cur = subhistory;
+  }
+  return sum;
 }
 
 function areZeroes(subhistory: number[]): boolean {
-  for (const num of subhistory) {
-    if (num !== 0) {
+  for (const n of subhistory) {
+    if (n !== 0) {
       return false;
     }
   }
   return true;
 }
 
-function partTwo(histories: number[][]) {
-  let extrapolatedValuesSum = 0;
-  for (const history of histories) {
-    const subhistories: number[][] = [];
-
-    let curSubhistory: number[] = history;
-    while (!areZeroes(curSubhistory)) {
-      const subhistory: number[] = [];
-      for (let i = 0; i < curSubhistory.length - 1; i++) {
-        const num = curSubhistory[i + 1] - curSubhistory[i];
-        subhistory.push(num);
-      }
-      subhistories.push(subhistory);
-      curSubhistory = subhistory;
-    }
-
-    let firstValue = 0;
-    for (let j = subhistories.length - 1; j >= 0; j--) {
-      const subhistory = subhistories[j];
-      firstValue = subhistory[0] - firstValue;
-    }
-    firstValue = history[0] - firstValue;
-
-    extrapolatedValuesSum += firstValue;
+function sumExtrapolatedValues2(histories: number[][]): number {
+  let sum = 0;
+  for (const h of histories) {
+    sum += extrapolatePrevValue(h);
   }
-  console.log(extrapolatedValuesSum);
+  return sum;
+}
+
+function extrapolatePrevValue(history: number[]): number {
+  const subhistories: number[][] = [];
+  let cur = history;
+  while (true) {
+    const subhistory: number[] = [];
+    for (let i = 0; i < cur.length - 1; i++) {
+      const num = cur[i + 1] - cur[i];
+      subhistory.push(num);
+    }
+    if (areZeroes(subhistory)) {
+      break;
+    }
+    subhistories.push(subhistory);
+    cur = subhistory;
+  }
+  let prev = 0;
+  for (let i = subhistories.length - 1; i >= 0; i--) {
+    const s = subhistories[i];
+    prev = s[0] - prev;
+  }
+  prev = history[0] - prev;
+  return prev;
 }
