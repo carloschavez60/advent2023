@@ -9,62 +9,76 @@ const charConverter = {
   F: '╔',
 } as const;
 
+const dirs = [
+  { x: 0, y: -1 },
+  { x: 1, y: 0 },
+  { x: 0, y: 1 },
+  { x: -1, y: 0 },
+] as const;
+
+class Point {
+  x: number;
+  y: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  isEqualTo(p: Point): boolean {
+    if (this.x === p.x && this.y === p.y) {
+      return true;
+    }
+    return false;
+  }
+}
+
 main();
 
 function main() {
-  // const filePath = process.cwd() + '/src/day10/test-input.txt'; // 8
-  const filePath = process.cwd() + '/src/day10/part-two-test-input.txt'; //
-  // let filePath = process.cwd() + '/src/day10/input.txt'; // 6682
+  // const inputPath = process.cwd() + '/src/day10/test-input.txt'; // 8
+  // const inputPath = process.cwd() + '/src/day10/part-two-test-input.txt'; // 80
+  let inputPath = process.cwd() + '/src/day10/input.txt'; // 6682
 
-  const fileStr = readNewFile(filePath);
-  // console.log(fileStr);
-
-  const lines = fileStr.split('\n');
-  lines.pop();
+  const l = readNewFileLines(inputPath);
 
   console.time('partOne');
-  partOne(lines);
+  const c = countStepsToFarthestPoint(l);
+  console.log(c);
   console.timeEnd('partOne');
 
   // console.time('partTwo');
-  // partTwo(histories);
   // console.timeEnd('partTwo');
 }
 
-function readNewFile(filePath: string): string {
+function readNewFileLines(filePath: string): string[] {
   const fileName = filePath.split('/').at(-1)!;
   const newFileName = 'new-' + fileName;
   const newFilePath = filePath.slice(0, -fileName.length) + newFileName;
 
   try {
-    return readFileSync(newFilePath, 'utf8');
+    const lines = readFileSync(newFilePath, 'utf8').split('\n');
+    lines.pop();
+    return lines;
   } catch {
-    const fileStr = readFileSync(filePath, 'utf8');
-
-    let newFileStr = fileStr;
+    let newStrFile = readFileSync(filePath, 'utf8');
     for (const char in charConverter) {
-      newFileStr = newFileStr.replaceAll(
+      newStrFile = newStrFile.replaceAll(
         char,
         charConverter[char as keyof typeof charConverter]
       );
     }
-    writeFileSync(newFilePath, newFileStr);
-    return newFileStr;
+    writeFileSync(newFilePath, newStrFile);
+    const lines = newStrFile.split('\n');
+    lines.pop();
+    return lines;
   }
 }
 
-function partOne(lines: string[]) {
-  const dirs = [
-    { x: 0, y: -1 },
-    { x: 1, y: 0 },
-    { x: 0, y: 1 },
-    { x: -1, y: 0 },
-  ];
-
-  const startPos = getStartPosition(lines)!;
-
-  const prevPos = { x: startPos.x, y: startPos.y };
-  const curPos = { x: -1, y: -1 };
+function countStepsToFarthestPoint(lines: string[]): number {
+  const startPos = getStartPosition(lines);
+  let prevPos = new Point(startPos.x, startPos.y);
+  let curPos = new Point(-1, -1);
   for (const dir of dirs) {
     if (isValidPipe(startPos, dir, lines)) {
       curPos.x = startPos.x + dir.x;
@@ -72,49 +86,39 @@ function partOne(lines: string[]) {
       break;
     }
   }
-  // console.log(curPos, prevPos);
-
   let step = 1;
-  while (curPos.x !== startPos.x || curPos.y !== startPos.y) {
-    // console.log(curPos);
-    for (const dir of dirs) {
-      if (
-        isValidPipe(curPos, dir, lines) &&
-        (curPos.x + dir.x !== prevPos.x || curPos.y + dir.y !== prevPos.y)
-      ) {
-        prevPos.x = curPos.x;
-        prevPos.y = curPos.y;
-        curPos.x = curPos.x + dir.x;
-        curPos.y = curPos.y + dir.y;
-        break;
-      }
-    }
-
+  while (!curPos.isEqualTo(startPos)) {
     step++;
+    const nextPos = getNextPosition(curPos, prevPos, lines);
+    prevPos = curPos;
+    curPos = nextPos;
   }
-  console.log(step / 2);
+  return step / 2;
 }
 
-function getStartPosition(lines: string[]): { x: number; y: number } {
-  let startPosX = 0;
-  let startPosY = 0;
+function getStartPosition(lines: string[]): Point {
   for (let y = 0; y < lines.length; y++) {
-    const line = lines[y];
-    const pos = line.search('S');
-    if (pos !== -1) {
-      startPosY = y;
-      startPosX = pos;
-      return {
-        x: startPosX,
-        y: startPosY,
-      };
+    for (let x = 0; x < lines[y].length; x++) {
+      if (lines[y][x] === 'S') {
+        return new Point(x, y);
+      }
     }
   }
   throw new Error('S not found in input file');
 }
 
+function getNextPosition(cur: Point, prev: Point, lines: string[]): Point {
+  for (const d of dirs) {
+    const nextPos = new Point(cur.x + d.x, cur.y + d.y);
+    if (isValidPipe(cur, d, lines) && !nextPos.isEqualTo(prev)) {
+      return nextPos;
+    }
+  }
+  throw new Error('There is not a loop in the input file');
+}
+
 function isValidPipe(
-  position: { x: number; y: number },
+  position: Point,
   direction: { x: number; y: number },
   lines: string[]
 ): boolean {
@@ -127,7 +131,6 @@ function isValidPipe(
     return false;
   }
   const curChar = lines[position.y][position.x];
-
   if (
     direction.x === 0 &&
     direction.y === -1 &&
@@ -174,4 +177,5 @@ function isValidPipe(
   }
   return false;
 }
-function partTwo() {}
+
+function countEnclosedTiles() {}
