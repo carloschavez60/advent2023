@@ -77,15 +77,8 @@ function readNewFileLines(filePath: string): string[] {
 
 function countStepsToFarthestPoint(lines: string[]): number {
   const startPos = getStartPosition(lines);
-  let prevPos = new Point(startPos.x, startPos.y);
-  let curPos = new Point(-1, -1);
-  for (const dir of dirs) {
-    if (isValidPipe(startPos, dir, lines)) {
-      curPos.x = startPos.x + dir.x;
-      curPos.y = startPos.y + dir.y;
-      break;
-    }
-  }
+  let prevPos = startPos;
+  let curPos = getNextPosition(startPos, prevPos, lines);
   let step = 1;
   while (!curPos.isEqualTo(startPos)) {
     step++;
