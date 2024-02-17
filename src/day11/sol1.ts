@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileLines } from '../utils.js';
 
 class Galaxy {
   id: number;
@@ -19,72 +19,65 @@ class Galaxy {
 main();
 
 function main() {
-  // const filePath = process.cwd() + '/src/day11/test-input.txt';
-  const filePath = process.cwd() + '/src/day11/input.txt'; // 9536038 447744640566
+  // const inputPath = process.cwd() + '/src/day11/test-input.txt'; // 374 82000210
+  const inputPath = process.cwd() + '/src/day11/input.txt'; // 9536038 447744640566
 
-  const lines = getFileLines(filePath);
+  const l = readFileLines(inputPath);
 
   console.time('partOne');
-  partOne(lines);
+  const s = getShortestPathsSum(l);
+  console.log(s);
   console.timeEnd('partOne');
 
+  const expansion = 1_000_000;
+
   console.time('partTwo');
-  partTwo(lines);
+  const s2 = getShortestPathsSum2(l, expansion);
+  console.log(s2);
   console.timeEnd('partTwo');
 }
 
-function getFileLines(filePath: string): string[] {
-  const fileAsString = readFileSync(filePath, 'utf8');
-  const lines = fileAsString.split('\n');
-  lines.pop();
-  return lines;
-}
-
-function partOne(lines: string[]) {
-  const expandedLines = expandLines(lines);
-  const galaxies = getGalaxies(expandedLines);
-  const shortestPathSum = getShortestPathSum(galaxies);
-  console.log(shortestPathSum);
+function getShortestPathsSum(lines: string[]): number {
+  const el = expandLines(lines);
+  const g = toGalaxies(el);
+  const sum = sumGalaxyShortestPaths(g);
+  return sum;
 }
 
 function expandLines(lines: string[]): string[] {
-  const expandedLines = [...lines];
+  const l = [...lines];
   //expand columns
-  for (let x = 0; x < expandedLines[0].length; x++) {
+  for (let x = 0; x < l[0].length; x++) {
     let colContainsNoGalaxies = true;
-    for (let y = 0; y < expandedLines.length; y++) {
-      if (expandedLines[y][x] === '#') {
+    for (let y = 0; y < l.length; y++) {
+      if (l[y][x] === '#') {
         colContainsNoGalaxies = false;
+        break;
       }
     }
-
     if (colContainsNoGalaxies) {
-      for (let y = 0; y < expandedLines.length; y++) {
-        expandedLines[y] =
-          expandedLines[y].slice(0, x) + '.' + expandedLines[y].slice(x);
+      for (let y = 0; y < l.length; y++) {
+        l[y] = l[y].slice(0, x) + '.' + l[y].slice(x);
       }
       x++;
     }
   }
-
   // expand rows
-  for (let y = 0; y < expandedLines.length; y++) {
-    const line = expandedLines[y];
-    const emptyLine = ''.padStart(line.length, '.');
-
-    if (line === emptyLine) {
-      expandedLines.splice(y, 0, emptyLine);
+  for (let y = 0; y < l.length; y++) {
+    const emptyLine = ''.padStart(l[y].length, '.');
+    if (l[y] === emptyLine) {
+      l.splice(y, 0, emptyLine);
       y++;
     }
   }
-  return expandedLines;
+  return l;
 }
 
-function getGalaxies(lines: string[]): Galaxy[] {
+function toGalaxies(lines: string[]): Galaxy[] {
   const galaxies: Galaxy[] = [];
   let n = 1;
   for (let y = 0; y < lines.length; y++) {
-    for (let x = 0; x < lines[0].length; x++) {
+    for (let x = 0; x < lines[y].length; x++) {
       if (lines[y][x] === '#') {
         galaxies.push(new Galaxy(n, x, y));
         n++;
@@ -94,101 +87,74 @@ function getGalaxies(lines: string[]): Galaxy[] {
   return galaxies;
 }
 
-function getShortestPathSum(galaxies: Galaxy[]): number {
+function sumGalaxyShortestPaths(galaxies: Galaxy[]): number {
   let sum = 0;
   for (let i = 0; i < galaxies.length - 1; i++) {
-    const galaxyI = galaxies[i];
     for (let j = i + 1; j < galaxies.length; j++) {
-      const galaxyJ = galaxies[j];
-      const shortestPath = galaxyI.getShortestPathTo(galaxyJ);
-      sum += shortestPath;
+      sum += galaxies[i].getShortestPathTo(galaxies[j]);
     }
   }
   return sum;
 }
 
-function partTwo(lines: string[]) {
-  const expansionCoefficient = 1000000;
-
-  const galaxies = getGalaxies(lines);
-  const expandedGalaxies = getExpandedGalaxies(
-    expansionCoefficient,
-    galaxies,
-    lines
-  );
-  const shortestPathSum = getShortestPathSum(expandedGalaxies);
-  console.log(shortestPathSum);
+function getShortestPathsSum2(lines: string[], expansion: number): number {
+  const g = toGalaxies(lines);
+  const eg = expandGalaxies(g, expansion, lines);
+  const sum = sumGalaxyShortestPaths(eg);
+  return sum;
 }
 
-function getExpandedGalaxies(
-  expansionCoefficient: number,
+function expandGalaxies(
   galaxies: Galaxy[],
+  expansion: number,
   lines: string[]
 ): Galaxy[] {
-  const rowMultipliers = getRowMultipliers(galaxies, lines);
-  const colMultipliers = getColMultipliers(galaxies, lines);
-
-  const expandedGalaxies: Galaxy[] = [];
-  for (let i = 0; i < galaxies.length; i++) {
-    const galaxy = galaxies[i];
-    expandedGalaxies.push(
-      new Galaxy(
-        galaxy.id,
-        galaxy.x + (expansionCoefficient - 1) * colMultipliers[i],
-        galaxy.y + (expansionCoefficient - 1) * rowMultipliers[i]
-      )
-    );
+  const rm = getRowMultipliers(galaxies, lines);
+  const cm = getColMultipliers(galaxies, lines);
+  const eg = [...galaxies];
+  for (let i = 0; i < eg.length; i++) {
+    const g = eg[i];
+    g.x += (expansion - 1) * cm[i];
+    g.y += (expansion - 1) * rm[i];
   }
-
-  return expandedGalaxies;
+  return eg;
 }
 
 function getRowMultipliers(galaxies: Galaxy[], lines: string[]): number[] {
-  const rowMultipliers: number[] = [];
-  for (let i = 0; i < galaxies.length; i++) {
-    rowMultipliers[i] = 0;
-  }
-
+  const rm: number[] = new Array(galaxies.length).fill(0);
   for (let y = 0; y < lines.length; y++) {
-    const line = lines[y];
-    const emptyLine = ''.padStart(line.length, '.');
-
-    if (line === emptyLine) {
+    const l = lines[y];
+    const empty = ''.padStart(l.length, '.');
+    if (l === empty) {
       for (let i = 0; i < galaxies.length; i++) {
-        const galaxy = galaxies[i];
-        if (galaxy.y > y) {
-          rowMultipliers[i]++;
+        const g = galaxies[i];
+        if (g.y > y) {
+          rm[i]++;
         }
       }
     }
   }
-
-  return rowMultipliers;
+  return rm;
 }
 
 function getColMultipliers(galaxies: Galaxy[], lines: string[]): number[] {
-  const colMultipliers: number[] = [];
-  for (let i = 0; i < galaxies.length; i++) {
-    colMultipliers[i] = 0;
-  }
-
+  const cm: number[] = new Array(galaxies.length).fill(0);
   for (let x = 0; x < lines[0].length; x++) {
     let colContainsNoGalaxies = true;
     for (let y = 0; y < lines.length; y++) {
       if (lines[y][x] === '#') {
         colContainsNoGalaxies = false;
+        break;
       }
     }
-
     if (colContainsNoGalaxies) {
       for (let i = 0; i < galaxies.length; i++) {
-        const galaxy = galaxies[i];
-        if (galaxy.x > x) {
-          colMultipliers[i]++;
+        const g = galaxies[i];
+        if (g.x > x) {
+          cm[i]++;
         }
       }
     }
   }
-
-  return colMultipliers;
+  return cm;
 }
