@@ -1,4 +1,6 @@
-import { readFileSync } from 'fs';
+import { readFileLines } from '../utils.js';
+
+const cache: Map<string, number> = new Map();
 
 class Row {
   conditions: string;
@@ -13,62 +15,100 @@ class Row {
 main();
 
 function main() {
-  const filePath = process.cwd() + '/src/day12/test-input.txt';
-  // const filePath = process.cwd() + '/src/day12/input.txt'; // 9536038 447744640566
+  // const inputPath = process.cwd() + '/src/day12/test-input.txt'; // 21 525152
+  const inputPath = process.cwd() + '/src/day12/input.txt'; // 7379 7732028747925
 
-  const rows = getRows(filePath);
+  const l = readFileLines(inputPath);
+  const r = toRows(l);
 
   console.time('partOne');
-  partOne(rows);
+  const s = sumPossibleArrangementCounts(r);
+  console.log(s);
   console.timeEnd('partOne');
 
-  // console.time('partTwo');
-  // partTwo(lines);
-  // console.timeEnd('partTwo');
+  const r2 = unfoldRows(r);
+
+  console.time('partTwo');
+  const s2 = sumPossibleArrangementCounts(r2);
+  console.log(s2);
+  console.timeEnd('partTwo');
 }
 
-function getRows(filePath: string): Row[] {
-  const fileAsString = readFileSync(filePath, 'utf8');
-  const lines = fileAsString.split('\n');
-  lines.pop();
-
+function toRows(lines: string[]): Row[] {
   const rows: Row[] = [];
-  for (const line of lines) {
-    const [conditions, groupsAsString] = line.split(' ');
+  for (const l of lines) {
+    const [conditions, sgroups] = l.split(' ');
     const groups: number[] = [];
-    for (const s of groupsAsString.split(',')) {
-      groups.push(+s);
+    for (const s of sgroups.split(',')) {
+      groups.push(Number(s));
     }
     rows.push(new Row(conditions, groups));
   }
   return rows;
 }
 
-function partOne(rows: Row[]) {
+function sumPossibleArrangementCounts(rows: Row[]): number {
   let sum = 0;
-  for (const row of rows) {
-    const arrangementCount = getArrangementCount(row);
-    sum += arrangementCount;
+  for (const r of rows) {
+    sum += countPossibleArrangements(r);
   }
-  console.log(sum);
+  return sum;
 }
 
-function getArrangementCount(row: Row): number {
-  console.log(row);
-  let curGroup = row.groups[0];
-  let curGroupCount = 0;
-  let conditions = row.conditions;
-  for (let i = 0; i < conditions.length; i++) {
-    const char = conditions[i];
-    const rightChar = conditions[i + 1];
-    if (char === '#') {
-      curGroupCount++;
-    } else if (char === '?') {
+function countPossibleArrangements(row: Row): number {
+  return count(row.conditions, row.groups);
+}
+
+function count(conditions: string, groups: number[]): number {
+  if (conditions === '') {
+    if (groups.length === 0) {
+      return 1;
+    } else {
+      return 0;
     }
   }
-  return 1;
+  if (groups.length === 0) {
+    if (conditions.includes('#')) {
+      return 0;
+    } else {
+      return 1;
+    }
+  }
+
+  const key = JSON.stringify([conditions, groups]);
+  if (cache.has(key)) {
+    return cache.get(key)!;
+  }
+
+  let result = 0;
+  if (conditions[0] === '.' || conditions[0] === '?') {
+    result += count(conditions.slice(1), groups);
+  }
+  if (conditions[0] === '#' || conditions[0] === '?') {
+    if (
+      groups[0] <= conditions.length &&
+      !conditions.slice(0, groups[0]).includes('.') &&
+      (groups[0] === conditions.length || conditions[groups[0]] !== '#')
+    ) {
+      result += count(conditions.slice(groups[0] + 1), groups.slice(1));
+    }
+  }
+  cache.set(key, result);
+  return result;
 }
 
-// function partTwo(lines: string[]) {
-//   console.log(shortestPathSum);
-// }
+function unfoldRows(rows: Row[]): Row[] {
+  const rs = [...rows];
+  for (const r of rs) {
+    const ncArr: string[] = [];
+    const ng: number[][] = [];
+    for (let i = 0; i < 5; i++) {
+      ncArr.push(r.conditions);
+      ng.push(r.groups);
+    }
+    const nc = ncArr.join('?');
+    r.conditions = nc;
+    r.groups = ng.flat();
+  }
+  return rs;
+}
