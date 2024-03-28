@@ -1,16 +1,20 @@
 import { readFileLines } from '../utils.js';
 
-const stringToNumber = {
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: 5,
-  six: 6,
-  seven: 7,
-  eight: 8,
-  nine: 9,
-} as const;
+const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
+  ['one', 1],
+  ['two', 2],
+  ['three', 3],
+  ['four', 4],
+  ['five', 5],
+  ['six', 6],
+  ['seven', 7],
+  ['eight', 8],
+  ['nine', 9],
+]);
+
+const spelledDigits: readonly string[] = Object.keys(
+  Object.fromEntries(spelledDigitToDigit)
+);
 
 main();
 
@@ -22,58 +26,63 @@ function main() {
   const lines = readFileLines(filePath);
 
   console.time('partOne');
-  const calibrationValueSum = partOne(lines);
-  console.log(calibrationValueSum);
+  const sum = sumCalibrationValues(lines);
+  console.log(sum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const calibrationValueSum2 = partTwo(lines);
-  console.log(calibrationValueSum2);
+  const sum2 = sumCalibrationValues2(lines);
+  console.log(sum2);
   console.timeEnd('partTwo');
 }
 
-function partOne(lines: readonly string[]): number {
-  return lines.reduce((s, line) => s + getCalibrationValue(line), 0);
+function sumCalibrationValues(lines: readonly string[]): number {
+  return lines.reduce((sum, line) => sum + getCalibrationValue(line), 0);
 }
 
 function getCalibrationValue(line: string): number {
-  const digits = line.split('').filter((char) => isNumber(char));
-  const firstDigit = digits[0];
-  const lastDigit = digits.at(-1);
-  if (firstDigit !== undefined && lastDigit !== undefined) {
-    return parseInt(firstDigit + lastDigit);
-  }
-  return 0;
+  const [firstDigit, lastDigit] = line
+    .split('')
+    .map((char) => Number(char))
+    .filter((digit) => !isNaN(digit))
+    .reduce((acc, digit, _, arr) => [arr[0], digit], [undefined, undefined] as [
+      number | undefined,
+      number | undefined
+    ]);
+  return firstDigit !== undefined && lastDigit !== undefined
+    ? firstDigit * 10 + lastDigit
+    : 0;
 }
 
-function isNumber(char: string): boolean {
-  return !isNaN(parseInt(char));
-}
-
-function partTwo(lines: readonly string[]): number {
-  return lines.reduce((s, line) => s + getCalibrationValuePartTwo(line), 0);
+function sumCalibrationValues2(lines: readonly string[]): number {
+  return lines.reduce((sum, line) => sum + getCalibrationValuePartTwo(line), 0);
 }
 
 function getCalibrationValuePartTwo(line: string): number {
-  const digits = line
+  const [firstDigit, lastDigit] = line
     .split('')
     .map((char, i) => {
-      if (isNumber(char)) {
-        return parseInt(char);
-      }
-      const key = Object.keys(stringToNumber).find((key) =>
-        line.startsWith(key, i)
-      );
-      if (key !== undefined) {
-        return stringToNumber[key as keyof typeof stringToNumber];
-      }
+      const digit: number | undefined = Number(char);
+      if (!isNaN(digit)) return digit;
+      const altDigit = findDigit(line, i);
+      if (altDigit !== undefined) return altDigit;
       return undefined;
     })
-    .filter((n) => n !== undefined) as readonly number[];
-  const firstDigit = digits[0];
-  const lastDigit = digits.at(-1);
-  if (firstDigit !== undefined && lastDigit !== undefined) {
-    return firstDigit * 10 + lastDigit;
-  }
-  return 0;
+    .filter((n) => n !== undefined)
+    .reduce((acc, digit, _, arr) => [arr[0], digit], [undefined, undefined] as [
+      number | undefined,
+      number | undefined
+    ]);
+  return firstDigit !== undefined && lastDigit !== undefined
+    ? firstDigit * 10 + lastDigit
+    : 0;
+}
+
+function findDigit(searchString: string, position: number): number | undefined {
+  const spelledDigit = spelledDigits.find((spelledDigit) =>
+    searchString.startsWith(spelledDigit, position)
+  );
+  return spelledDigit !== undefined
+    ? spelledDigitToDigit.get(spelledDigit)
+    : undefined;
 }

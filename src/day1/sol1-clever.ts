@@ -1,6 +1,6 @@
 import { readFileLines } from '../utils.js';
 
-const stringToNumber = {
+const digitToNumber: Readonly<{ [digit: string]: number }> = {
   one: 1,
   two: 2,
   three: 3,
@@ -10,7 +10,7 @@ const stringToNumber = {
   seven: 7,
   eight: 8,
   nine: 9,
-} as const;
+};
 
 main();
 
@@ -78,10 +78,8 @@ function getCalibrationValue2(line: string): number {
 }
 
 function findSpelledNumber(index: number, line: string): number | undefined {
-  const key = Object.keys(stringToNumber).find((key) =>
+  const key = Object.keys(digitToNumber).find((key) =>
     line.startsWith(key, index)
   );
-  return key !== undefined
-    ? stringToNumber[key as keyof typeof stringToNumber]
-    : undefined;
+  return key !== undefined ? digitToNumber[key] : undefined;
 }

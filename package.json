@@ -4,6 +4,8 @@
     "build": "rm -r ./build/ && tsc",
     "watch": "tsc --watch",
     "1": "node --watch ./build/day1/sol1.js",
+    "1d": "node --watch ./build/day1/sol1-declarative.js",
+    "1c": "node --watch ./build/day1/sol1-clever.js",
     "2": "node --watch ./build/day2/sol1.js",
     "3": "node --watch ./build/day3/sol1.js",
     "4": "node --watch ./build/day4/sol1.js",
