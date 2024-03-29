@@ -1,16 +1,20 @@
 import { readFileLines } from '../utils.js';
 
-const stringToNumber = {
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: 5,
-  six: 6,
-  seven: 7,
-  eight: 8,
-  nine: 9,
-} as const;
+const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
+  ['one', 1],
+  ['two', 2],
+  ['three', 3],
+  ['four', 4],
+  ['five', 5],
+  ['six', 6],
+  ['seven', 7],
+  ['eight', 8],
+  ['nine', 9],
+]);
+
+const spelledDigits: readonly string[] = Object.keys(
+  Object.fromEntries(spelledDigitToDigit)
+);
 
 main();
 
@@ -19,84 +23,83 @@ function main() {
   // const inputPath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
   const inputPath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
 
-  const l = readFileLines(inputPath);
+  const lines = readFileLines(inputPath);
 
   console.time('partOne');
-  const s = sumCalibrationValues(l);
-  console.log(s);
+  const sum = sumCalibrationValues(lines);
+  console.log(sum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const s2 = sumCalibrationValues2(l);
-  console.log(s2);
+  const sum2 = sumCalibrationValues2(lines);
+  console.log(sum2);
   console.timeEnd('partTwo');
 }
 
 function sumCalibrationValues(lines: string[]): number {
-  let sum = 0;
-  for (const l of lines) {
-    sum += getCalibrationValue(l);
-  }
-  return sum;
+  return lines.reduce((sum, line) => sum + getCalibrationValue(line), 0);
 }
 
 function getCalibrationValue(line: string): number {
   let firstDigit: number | undefined;
   let lastDigit: number | undefined;
-  let catched = false;
-  for (const c of line) {
-    const n = Number(c);
-    if (!isNaN(n)) {
-      lastDigit = n;
-      if (!catched) {
-        firstDigit = n;
-        catched = true;
-      }
+  let i = 0;
+  while (firstDigit === undefined && i < line.length) {
+    const digit = Number(line[i]);
+    if (!isNaN(digit)) {
+      firstDigit = digit;
+      lastDigit = digit;
     }
+    i++;
   }
-  if (firstDigit === undefined || lastDigit === undefined) {
-    return 0;
+  while (i < line.length) {
+    const digit = Number(line[i]);
+    if (!isNaN(digit)) {
+      lastDigit = digit;
+    }
+    i++;
   }
+  if (firstDigit === undefined || lastDigit === undefined) return 0;
   return firstDigit * 10 + lastDigit;
 }
 
 function sumCalibrationValues2(lines: string[]): number {
-  let sum = 0;
-  for (const l of lines) {
-    sum += getCalibrationValue2(l);
-  }
-  return sum;
+  return lines.reduce((sum, line) => sum + getCalibrationValue2(line), 0);
 }
 
 function getCalibrationValue2(line: string): number {
   let firstDigit: number | undefined;
   let lastDigit: number | undefined;
-  let catched = false;
-  for (let x = 0; x < line.length; x++) {
-    const c = line[x];
-    let n: number | undefined = Number(c);
-    if (isNaN(n)) {
-      n = findSpelledNumber(x, line);
+  let i = 0;
+  while (firstDigit === undefined && i < line.length) {
+    let digit: number | undefined = Number(line[i]);
+    if (isNaN(digit)) {
+      digit = findDigit(line, i);
     }
-    if (n !== undefined) {
-      lastDigit = n;
-      if (!catched) {
-        firstDigit = n;
-        catched = true;
-      }
+    if (digit !== undefined) {
+      firstDigit = digit;
+      lastDigit = digit;
     }
+    i++;
   }
-  if (firstDigit === undefined || lastDigit === undefined) {
-    return 0;
+  while (i < line.length) {
+    let digit: number | undefined = Number(line[i]);
+    if (isNaN(digit)) {
+      digit = findDigit(line, i);
+    }
+    if (digit !== undefined) {
+      lastDigit = digit;
+    }
+    i++;
   }
+  if (firstDigit === undefined || lastDigit === undefined) return 0;
   return firstDigit * 10 + lastDigit;
 }
 
-function findSpelledNumber(index: number, line: string): number | undefined {
-  for (const s in stringToNumber) {
-    if (line.startsWith(s, index)) {
-      return stringToNumber[s as keyof typeof stringToNumber];
-    }
-  }
-  return undefined;
+function findDigit(searchString: string, position: number): number | undefined {
+  const spelledDigit = spelledDigits.find((spelledDigit) =>
+    searchString.startsWith(spelledDigit, position)
+  );
+  if (spelledDigit === undefined) return undefined;
+  return spelledDigitToDigit.get(spelledDigit);
 }

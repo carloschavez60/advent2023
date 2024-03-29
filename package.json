@@ -13,11 +13,8 @@
     "10": "node --watch ./build/day10/sol1.js",
     "11": "node --watch ./build/day11/sol1.js",
     "12": "node --watch ./build/day12/sol1.js",
-    "build": "rm -r ./build/ && tsc",
+    "build": "rm -rf ./build/ && tsc",
     "watch": "tsc --watch",
-    "1d": "node --watch ./build/day1/sol1-declarative.js",
-    "1c": "node --watch ./build/day1/sol1-clever.js",
-    "1l": "node --watch ./build/day1/sol1-lodash.js",
     "4d": "node --watch ./build/day4/sol1-declarative.js"
   },
   "devDependencies": {
