@@ -36,7 +36,7 @@ function main() {
   console.timeEnd('partTwo');
 }
 
-function sumCalibrationValues(lines: string[]): number {
+function sumCalibrationValues(lines: readonly string[]): number {
   return lines.reduce((sum, line) => sum + getCalibrationValue(line), 0);
 }
 
@@ -63,7 +63,7 @@ function getCalibrationValue(line: string): number {
   return firstDigit * 10 + lastDigit;
 }
 
-function sumCalibrationValues2(lines: string[]): number {
+function sumCalibrationValues2(lines: readonly string[]): number {
   return lines.reduce((sum, line) => sum + getCalibrationValue2(line), 0);
 }
 
