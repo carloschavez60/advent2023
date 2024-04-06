@@ -12,10 +12,6 @@ const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
   ['nine', 9],
 ]);
 
-const spelledDigits: readonly string[] = Object.keys(
-  Object.fromEntries(spelledDigitToDigit)
-);
-
 main();
 
 function main() {
@@ -37,69 +33,70 @@ function main() {
 }
 
 function sumCalibrationValues(lines: readonly string[]): number {
-  return lines.reduce((sum, line) => sum + getCalibrationValue(line), 0);
+  return lines.reduce((sum, line) => sum + toCalibrationValue(line), 0);
 }
 
-function getCalibrationValue(line: string): number {
+function toCalibrationValue(line: string): number {
   let firstDigit: number | undefined;
-  let lastDigit: number | undefined;
-  let i = 0;
-  while (firstDigit === undefined && i < line.length) {
-    const digit = Number(line[i]);
+  for (const char of line) {
+    const digit = Number(char);
     if (!isNaN(digit)) {
       firstDigit = digit;
-      lastDigit = digit;
+      break;
     }
-    i++;
   }
-  while (i < line.length) {
+  let lastDigit: number | undefined;
+  for (let i = line.length - 1; i >= 0; i--) {
     const digit = Number(line[i]);
     if (!isNaN(digit)) {
       lastDigit = digit;
+      break;
     }
-    i++;
   }
-  if (firstDigit === undefined || lastDigit === undefined) return 0;
+  if (firstDigit === undefined || lastDigit === undefined) {
+    return 0;
+  }
   return firstDigit * 10 + lastDigit;
 }
 
 function sumCalibrationValues2(lines: readonly string[]): number {
-  return lines.reduce((sum, line) => sum + getCalibrationValue2(line), 0);
+  return lines.reduce((sum, line) => sum + toCalibrationValue2(line), 0);
 }
 
-function getCalibrationValue2(line: string): number {
+function toCalibrationValue2(line: string): number {
   let firstDigit: number | undefined;
-  let lastDigit: number | undefined;
-  let i = 0;
-  while (firstDigit === undefined && i < line.length) {
+  for (let i = 0; i < line.length; i++) {
     let digit: number | undefined = Number(line[i]);
     if (isNaN(digit)) {
       digit = findDigit(line, i);
     }
     if (digit !== undefined) {
       firstDigit = digit;
-      lastDigit = digit;
+      break;
     }
-    i++;
   }
-  while (i < line.length) {
+  let lastDigit: number | undefined;
+  for (let i = line.length - 1; i >= 0; i--) {
     let digit: number | undefined = Number(line[i]);
     if (isNaN(digit)) {
       digit = findDigit(line, i);
     }
     if (digit !== undefined) {
       lastDigit = digit;
+      break;
     }
-    i++;
   }
-  if (firstDigit === undefined || lastDigit === undefined) return 0;
+  if (firstDigit === undefined || lastDigit === undefined) {
+    return 0;
+  }
   return firstDigit * 10 + lastDigit;
 }
 
 function findDigit(searchString: string, position: number): number | undefined {
-  const spelledDigit = spelledDigits.find((spelledDigit) =>
-    searchString.startsWith(spelledDigit, position)
-  );
-  if (spelledDigit === undefined) return undefined;
-  return spelledDigitToDigit.get(spelledDigit);
+  for (const spelledDigit of spelledDigitToDigit.keys()) {
+    if (searchString.startsWith(spelledDigit, position)) {
+      return spelledDigitToDigit.get(spelledDigit);
+    }
+  }
+  return undefined;
 }
