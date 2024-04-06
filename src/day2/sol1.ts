@@ -1,24 +1,21 @@
 import { readFileLines } from '../utils.js';
 
-const config = {
-  red: 12,
-  green: 13,
-  blue: 14,
-} as const;
+const config: ReadonlyMap<string, number> = new Map([
+  ['red', 12],
+  ['green', 13],
+  ['blue', 14],
+]);
 
 class Game {
-  gameId: string;
-  sets: { [color: string]: number }[];
+  constructor(
+    public readonly id: string,
+    public readonly sets: ReadonlyMap<string, number>[]
+  ) {}
 
-  constructor(gameId: string, sets: { [color: string]: number }[]) {
-    this.gameId = gameId;
-    this.sets = sets;
-  }
-
-  isPossible(): boolean {
-    for (const s of this.sets) {
-      for (const c in s) {
-        if (s[c] > config[c as keyof typeof config]) {
+  get isPossible(): boolean {
+    for (const set of this.sets) {
+      for (const color of set.keys()) {
+        if (set.get(color)! > config.get(color)!) {
           return false;
         }
       }
@@ -26,24 +23,24 @@ class Game {
     return true;
   }
 
-  getMinSetPower(): number {
-    const ms = this.#getMinSet();
+  get minSetPower(): number {
+    const minSet = this.#minSet;
     let prod = 1;
-    for (const c in ms) {
-      prod *= ms[c];
+    for (const color of minSet.keys()) {
+      prod *= minSet.get(color)!;
     }
     return prod;
   }
 
-  #getMinSet(): { [color: string]: number } {
-    const minSet: { [color: string]: number } = {
-      red: 0,
-      green: 0,
-      blue: 0,
-    };
-    for (const s of this.sets) {
-      for (const c in s) {
-        minSet[c] = Math.max(minSet[c], s[c]);
+  get #minSet(): ReadonlyMap<string, number> {
+    const minSet = new Map<string, number>([
+      ['red', 0],
+      ['green', 0],
+      ['blue', 0],
+    ]);
+    for (const set of this.sets) {
+      for (const color of set.keys()) {
+        minSet.set(color, Math.max(minSet.get(color)!, set.get(color)!));
       }
     }
     return minSet;
@@ -56,31 +53,31 @@ function main() {
   // const inputPath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
   const inputPath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
 
-  const l = readFileLines(inputPath);
-  const g = toGames(l);
+  const lines = readFileLines(inputPath);
+  const games = toGames(lines);
 
   console.time('partOne');
-  const s = sumPossibleGameIds(g);
-  console.log(s);
+  const sum = sumPossibleGameIds(games);
+  console.log(sum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const s2 = sumMinSetPowers(g);
-  console.log(s2);
+  const sum2 = sumMinSetPowers(games);
+  console.log(sum2);
   console.timeEnd('partTwo');
 }
 
-function toGames(lines: string[]): Game[] {
+function toGames(lines: readonly string[]): readonly Game[] {
   const games: Game[] = [];
-  for (const l of lines) {
-    const [sid, ssets] = l.split(':');
-    const id = sid.split(' ')[1];
-    const sets: { [color: string]: number }[] = [];
-    for (const sset of ssets.split(';')) {
-      const set: { [color: string]: number } = {};
-      for (const ssubset of sset.split(',')) {
-        const [scount, color] = ssubset.trimStart().split(' ');
-        set[color] = Number(scount);
+  for (const line of lines) {
+    const [strId, strSets] = line.split(':');
+    const id = strId.split(' ')[1];
+    const sets: ReadonlyMap<string, number>[] = [];
+    for (const strSet of strSets.split(';')) {
+      const set = new Map<string, number>();
+      for (const strSubset of strSet.split(',')) {
+        const [strBallCount, color] = strSubset.trimStart().split(' ');
+        set.set(color, Number(strBallCount));
       }
       sets.push(set);
     }
@@ -89,20 +86,20 @@ function toGames(lines: string[]): Game[] {
   return games;
 }
 
-function sumPossibleGameIds(games: Game[]): number {
+function sumPossibleGameIds(games: readonly Game[]): number {
   let sum = 0;
-  for (const g of games) {
-    if (g.isPossible()) {
-      sum += Number(g.gameId);
+  for (const game of games) {
+    if (game.isPossible) {
+      sum += Number(game.id);
     }
   }
   return sum;
 }
 
-function sumMinSetPowers(games: Game[]): number {
+function sumMinSetPowers(games: readonly Game[]): number {
   let sum = 0;
-  for (const g of games) {
-    sum += g.getMinSetPower();
+  for (const game of games) {
+    sum += game.minSetPower;
   }
   return sum;
 }
