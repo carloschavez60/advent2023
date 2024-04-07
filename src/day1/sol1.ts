@@ -33,13 +33,17 @@ function main() {
 }
 
 function sumCalibrationValues(lines: readonly string[]): number {
-  return lines.reduce((sum, line) => sum + toCalibrationValue(line), 0);
+  let sum = 0;
+  for (const line of lines) {
+    sum += toCalibrationValue(line);
+  }
+  return sum;
 }
 
 function toCalibrationValue(line: string): number {
   let firstDigit: number | undefined;
-  for (const char of line) {
-    const digit = Number(char);
+  for (let i = 0; i < line.length; i++) {
+    const digit = Number(line[i]);
     if (!isNaN(digit)) {
       firstDigit = digit;
       break;
@@ -60,7 +64,11 @@ function toCalibrationValue(line: string): number {
 }
 
 function sumCalibrationValues2(lines: readonly string[]): number {
-  return lines.reduce((sum, line) => sum + toCalibrationValue2(line), 0);
+  let sum = 0;
+  for (const line of lines) {
+    sum += toCalibrationValue2(line);
+  }
+  return sum;
 }
 
 function toCalibrationValue2(line: string): number {
@@ -95,7 +103,7 @@ function toCalibrationValue2(line: string): number {
 function findDigit(searchString: string, position: number): number | undefined {
   for (const spelledDigit of spelledDigitToDigit.keys()) {
     if (searchString.startsWith(spelledDigit, position)) {
-      return spelledDigitToDigit.get(spelledDigit);
+      return spelledDigitToDigit.get(spelledDigit)!;
     }
   }
   return undefined;
