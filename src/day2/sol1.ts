@@ -15,7 +15,11 @@ class Game {
   get isPossible(): boolean {
     for (const set of this.sets) {
       for (const color of set.keys()) {
-        if (set.get(color)! > config.get(color)!) {
+        const configBallCount = config.get(color);
+        if (configBallCount === undefined) {
+          continue;
+        }
+        if (set.get(color)! > configBallCount) {
           return false;
         }
       }
@@ -24,23 +28,18 @@ class Game {
   }
 
   get minSetPower(): number {
-    const minSet = this.#minSet;
     let prod = 1;
-    for (const color of minSet.keys()) {
-      prod *= minSet.get(color)!;
+    for (const ballCount of this.#minSet.values()) {
+      prod *= ballCount;
     }
     return prod;
   }
 
   get #minSet(): ReadonlyMap<string, number> {
-    const minSet = new Map<string, number>([
-      ['red', 0],
-      ['green', 0],
-      ['blue', 0],
-    ]);
+    const minSet = new Map<string, number>();
     for (const set of this.sets) {
       for (const color of set.keys()) {
-        minSet.set(color, Math.max(minSet.get(color)!, set.get(color)!));
+        minSet.set(color, Math.max(minSet.get(color) ?? 0, set.get(color)!));
       }
     }
     return minSet;
