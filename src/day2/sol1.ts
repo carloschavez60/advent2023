@@ -68,13 +68,13 @@ async function main() {
 }
 
 async function sumPossibleGameIds(inputFilePath: string): Promise<number> {
-  const readline = createInterface({
+  const rl = createInterface({
     input: createReadStream(inputFilePath),
     crlfDelay: Infinity,
   });
 
   let sum = 0;
-  for await (const line of readline) {
+  for await (const line of rl) {
     const game: Game = toGame(line);
     if (game.isPossible()) {
       sum += Number(game.id);
@@ -101,13 +101,13 @@ function toGame(line: string): Game {
 }
 
 async function sumMinBallSetPowers(inputFilePath: string): Promise<number> {
-  const readline = createInterface({
+  const rl = createInterface({
     input: createReadStream(inputFilePath),
     crlfDelay: Infinity,
   });
 
   let sum = 0;
-  for await (const line of readline) {
+  for await (const line of rl) {
     const game: Game = toGame(line);
     sum += game.minBallSetPower();
   }

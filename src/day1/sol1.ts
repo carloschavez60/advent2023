@@ -32,13 +32,13 @@ async function main() {
 }
 
 async function sumCalibrationValues(inputFilePath: string): Promise<number> {
-  const readline = createInterface({
+  const rl = createInterface({
     input: createReadStream(inputFilePath),
     crlfDelay: Infinity,
   });
 
   let sum = 0;
-  for await (const line of readline) {
+  for await (const line of rl) {
     sum += toCalibrationValue(line);
   }
   return sum;
@@ -68,13 +68,13 @@ function toCalibrationValue(line: string): number {
 }
 
 async function sumCalibrationValues2(inputFilePath: string): Promise<number> {
-  const readline = createInterface({
+  const rl = createInterface({
     input: createReadStream(inputFilePath),
     crlfDelay: Infinity,
   });
 
   let sum = 0;
-  for await (const line of readline) {
+  for await (const line of rl) {
     sum += toCalibrationValue2(line);
   }
   return sum;
