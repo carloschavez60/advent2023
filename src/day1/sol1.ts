@@ -1,5 +1,4 @@
-import { createReadStream } from 'node:fs';
-import { createInterface } from 'node:readline/promises';
+import { readFileSync } from 'node:fs';
 
 const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
   ['one', 1],
@@ -15,30 +14,33 @@ const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
 
 main();
 
-async function main() {
+function main() {
   // const inputFilePath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
   // const inputFilePath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
   const inputFilePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
 
   console.time('partOne');
-  const sum: number = await sumCalibrationValues(inputFilePath);
+  const lines: string[] = readInputFileLines(inputFilePath);
+
+  const sum: number = sumCalibrationValues(lines);
   console.log(sum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const sum2: number = await sumCalibrationValues2(inputFilePath);
+  const sum2: number = sumCalibrationValues2(lines);
   console.log(sum2);
   console.timeEnd('partTwo');
 }
 
-async function sumCalibrationValues(inputFilePath: string): Promise<number> {
-  const rl = createInterface({
-    input: createReadStream(inputFilePath),
-    crlfDelay: Infinity,
-  });
+function readInputFileLines(inputFilePath: string): string[] {
+  const lines = readFileSync(inputFilePath, 'utf8').split('\n');
+  lines.pop();
+  return lines;
+}
 
+function sumCalibrationValues(lines: string[]): number {
   let sum = 0;
-  for await (const line of rl) {
+  for (const line of lines) {
     sum += toCalibrationValue(line);
   }
   return sum;
@@ -67,14 +69,9 @@ function toCalibrationValue(line: string): number {
   return firstDigit * 10 + lastDigit;
 }
 
-async function sumCalibrationValues2(inputFilePath: string): Promise<number> {
-  const rl = createInterface({
-    input: createReadStream(inputFilePath),
-    crlfDelay: Infinity,
-  });
-
+function sumCalibrationValues2(lines: string[]): number {
   let sum = 0;
-  for await (const line of rl) {
+  for (const line of lines) {
     sum += toCalibrationValue2(line);
   }
   return sum;
