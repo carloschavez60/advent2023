@@ -1,5 +1,4 @@
-import { createReadStream } from 'node:fs';
-import { createInterface } from 'node:readline/promises';
+import { readFileSync } from 'node:fs';
 
 const config: ReadonlyMap<string, number> = new Map([
   ['red', 12],
@@ -52,35 +51,36 @@ class Game {
 
 main();
 
-async function main() {
+function main() {
   // const inputFilePath = process.cwd() + '/src/day2/test-input.txt'; // 8 2286
   const inputFilePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
 
   console.time('partOne');
-  const sum: number = await sumPossibleGameIds(inputFilePath);
+  const games: Game[] = readGames(inputFilePath);
+
+  const sum: number = sumPossibleGameIds(games);
   console.log(sum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const sum2: number = await sumMinBallSetPowers(inputFilePath);
+  const sum2: number = sumMinBallSetPowers(games);
   console.log(sum2);
   console.timeEnd('partTwo');
 }
 
-async function sumPossibleGameIds(inputFilePath: string): Promise<number> {
-  const rl = createInterface({
-    input: createReadStream(inputFilePath),
-    crlfDelay: Infinity,
-  });
-
-  let sum = 0;
-  for await (const line of rl) {
-    const game: Game = toGame(line);
-    if (game.isPossible()) {
-      sum += Number(game.id);
-    }
+function readGames(inputFilePath: string): Game[] {
+  const lines: string[] = readInputFileLines(inputFilePath);
+  const games: Game[] = [];
+  for (const line of lines) {
+    games.push(toGame(line));
   }
-  return sum;
+  return games;
+}
+
+function readInputFileLines(inputFilePath: string): string[] {
+  const lines = readFileSync(inputFilePath, 'utf8').split('\n');
+  lines.pop();
+  return lines;
 }
 
 function toGame(line: string): Game {
@@ -100,15 +100,19 @@ function toGame(line: string): Game {
   return new Game(id, ballSets);
 }
 
-async function sumMinBallSetPowers(inputFilePath: string): Promise<number> {
-  const rl = createInterface({
-    input: createReadStream(inputFilePath),
-    crlfDelay: Infinity,
-  });
-
+function sumPossibleGameIds(games: readonly Game[]): number {
   let sum = 0;
-  for await (const line of rl) {
-    const game: Game = toGame(line);
+  for (const game of games) {
+    if (game.isPossible()) {
+      sum += Number(game.id);
+    }
+  }
+  return sum;
+}
+
+function sumMinBallSetPowers(games: readonly Game[]): number {
+  let sum = 0;
+  for (const game of games) {
     sum += game.minBallSetPower();
   }
   return sum;
