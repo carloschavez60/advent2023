@@ -19,15 +19,15 @@ function main() {
   // const inputPath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
   const inputPath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
 
-  const lines = readFileLines(inputPath);
+  const lines: string[] = readFileLines(inputPath);
 
   console.time('partOne');
-  const sum = sumCalibrationValues(lines);
+  const sum: number = sumCalibrationValues(lines);
   console.log(sum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const sum2 = sumCalibrationValues2(lines);
+  const sum2: number = sumCalibrationValues2(lines);
   console.log(sum2);
   console.timeEnd('partTwo');
 }
