@@ -1,4 +1,4 @@
-import { readFileLines } from '../utils.js';
+import { readFileSync } from 'node:fs';
 
 class MapNumber {
   value: number;
@@ -30,21 +30,27 @@ class MapNumber {
 main();
 
 function main() {
-  // const inputPath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
-  const inputPath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
-
-  const l = readFileLines(inputPath);
-  fillEdges(l);
+  // const inputFilePath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
+  const inputFilePath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
 
   console.time('partOne');
-  const s = sumPartNumbers(l);
-  console.log(s);
+  const lines: string[] = readInputFileLines(inputFilePath);
+  fillEdges(lines);
+
+  const sum: number = sumPartNumbers(lines);
+  console.log(sum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const s2 = sumGearRatios(l);
-  console.log(s2);
+  const sum2: number = sumGearRatios(lines);
+  console.log(sum2);
   console.timeEnd('partTwo');
+}
+
+function readInputFileLines(inputFilePath: string): string[] {
+  const lines = readFileSync(inputFilePath, 'utf8').split('\n');
+  lines.pop();
+  return lines;
 }
 
 function fillEdges(lines: string[]) {
