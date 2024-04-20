@@ -1,4 +1,5 @@
-import { readFileLines } from '../utils.js';
+import { createReadStream } from 'node:fs';
+import { createInterface } from 'node:readline/promises';
 
 const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
   ['one', 1],
@@ -14,27 +15,30 @@ const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
 
 main();
 
-function main() {
-  // const inputPath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
-  // const inputPath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
-  const inputPath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
-
-  const lines: string[] = readFileLines(inputPath);
+async function main() {
+  // const inputFilePath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
+  // const inputFilePath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
+  const inputFilePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
 
   console.time('partOne');
-  const sum: number = sumCalibrationValues(lines);
+  const sum: number = await sumCalibrationValues(inputFilePath);
   console.log(sum);
   console.timeEnd('partOne');
 
   console.time('partTwo');
-  const sum2: number = sumCalibrationValues2(lines);
+  const sum2: number = await sumCalibrationValues2(inputFilePath);
   console.log(sum2);
   console.timeEnd('partTwo');
 }
 
-function sumCalibrationValues(lines: readonly string[]): number {
+async function sumCalibrationValues(inputFilePath: string): Promise<number> {
+  const readline = createInterface({
+    input: createReadStream(inputFilePath),
+    crlfDelay: Infinity,
+  });
+
   let sum = 0;
-  for (const line of lines) {
+  for await (const line of readline) {
     sum += toCalibrationValue(line);
   }
   return sum;
@@ -63,9 +67,14 @@ function toCalibrationValue(line: string): number {
   return firstDigit * 10 + lastDigit;
 }
 
-function sumCalibrationValues2(lines: readonly string[]): number {
+async function sumCalibrationValues2(inputFilePath: string): Promise<number> {
+  const readline = createInterface({
+    input: createReadStream(inputFilePath),
+    crlfDelay: Infinity,
+  });
+
   let sum = 0;
-  for (const line of lines) {
+  for await (const line of readline) {
     sum += toCalibrationValue2(line);
   }
   return sum;
