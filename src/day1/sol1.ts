@@ -38,7 +38,7 @@ function readInputFileLines(inputFilePath: string): string[] {
   return lines;
 }
 
-function sumCalibrationValues(lines: string[]): number {
+function sumCalibrationValues(lines: readonly string[]): number {
   let sum = 0;
   for (const line of lines) {
     sum += toCalibrationValue(line);
@@ -49,17 +49,15 @@ function sumCalibrationValues(lines: string[]): number {
 function toCalibrationValue(line: string): number {
   let firstDigit: number | undefined;
   for (let i = 0; i < line.length; i++) {
-    const digit = Number(line[i]);
-    if (!isNaN(digit)) {
-      firstDigit = digit;
+    firstDigit = Number(line[i]);
+    if (!isNaN(firstDigit)) {
       break;
     }
   }
   let lastDigit: number | undefined;
   for (let i = line.length - 1; i >= 0; i--) {
-    const digit = Number(line[i]);
-    if (!isNaN(digit)) {
-      lastDigit = digit;
+    lastDigit = Number(line[i]);
+    if (!isNaN(lastDigit)) {
       break;
     }
   }
@@ -69,7 +67,7 @@ function toCalibrationValue(line: string): number {
   return firstDigit * 10 + lastDigit;
 }
 
-function sumCalibrationValues2(lines: string[]): number {
+function sumCalibrationValues2(lines: readonly string[]): number {
   let sum = 0;
   for (const line of lines) {
     sum += toCalibrationValue2(line);
@@ -80,23 +78,21 @@ function sumCalibrationValues2(lines: string[]): number {
 function toCalibrationValue2(line: string): number {
   let firstDigit: number | undefined;
   for (let i = 0; i < line.length; i++) {
-    let digit: number | undefined = Number(line[i]);
-    if (isNaN(digit)) {
-      digit = findDigit(line, i);
+    firstDigit = Number(line[i]);
+    if (isNaN(firstDigit)) {
+      firstDigit = findDigit(line, i);
     }
-    if (digit !== undefined) {
-      firstDigit = digit;
+    if (firstDigit !== undefined) {
       break;
     }
   }
   let lastDigit: number | undefined;
   for (let i = line.length - 1; i >= 0; i--) {
-    let digit: number | undefined = Number(line[i]);
-    if (isNaN(digit)) {
-      digit = findDigit(line, i);
+    lastDigit = Number(line[i]);
+    if (isNaN(lastDigit)) {
+      lastDigit = findDigit(line, i);
     }
-    if (digit !== undefined) {
-      lastDigit = digit;
+    if (lastDigit !== undefined) {
       break;
     }
   }
