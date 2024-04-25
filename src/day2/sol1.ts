@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-const config: ReadonlyMap<string, number> = new Map([
+const ballCountLimits: ReadonlyMap<string, number> = new Map([
   ['red', 12],
   ['green', 13],
   ['blue', 14],
@@ -15,11 +15,11 @@ class Game {
   isPossible(): boolean {
     for (const ballSet of this.ballSets) {
       for (const color of ballSet.keys()) {
-        const configBallCount = config.get(color);
-        if (configBallCount === undefined) {
+        const ballCountLimit = ballCountLimits.get(color);
+        if (ballCountLimit === undefined) {
           continue;
         }
-        if (ballSet.get(color)! > configBallCount) {
+        if (ballSet.get(color)! > ballCountLimit) {
           return false;
         }
       }
@@ -27,25 +27,25 @@ class Game {
     return true;
   }
 
-  minBallSetPower(): number {
+  calculateMinBallSetPower(): number {
     let power = 1;
-    for (const ballCount of this.#minBallSet().values()) {
+    for (const ballCount of this.#calculateMinBallSet().values()) {
       power *= ballCount;
     }
     return power;
   }
 
-  #minBallSet(): Map<string, number> {
-    const minSet = new Map<string, number>();
+  #calculateMinBallSet(): Map<string, number> {
+    const minBallSet = new Map<string, number>();
     for (const ballSet of this.ballSets) {
       for (const color of ballSet.keys()) {
-        minSet.set(
+        minBallSet.set(
           color,
-          Math.max(ballSet.get(color)!, minSet.get(color) ?? 0)
+          Math.max(ballSet.get(color)!, minBallSet.get(color) ?? 0)
         );
       }
     }
-    return minSet;
+    return minBallSet;
   }
 }
 
@@ -56,7 +56,14 @@ function main() {
   const inputFilePath = process.cwd() + '/src/day2/input.txt'; // 2476 54911
 
   console.time('partOne');
-  const games: Game[] = readGames(inputFilePath);
+  let games: Game[];
+  try {
+    games = readGamesFromFile(inputFilePath);
+  } catch (error) {
+    console.error(error);
+    process.exitCode = 1;
+    return;
+  }
 
   const sum: number = sumPossibleGameIds(games);
   console.log(sum);
@@ -68,11 +75,12 @@ function main() {
   console.timeEnd('partTwo');
 }
 
-function readGames(inputFilePath: string): Game[] {
+function readGamesFromFile(inputFilePath: string): Game[] {
   const lines: string[] = readInputFileLines(inputFilePath);
   const games: Game[] = [];
   for (const line of lines) {
-    games.push(toGame(line));
+    const game = parseLineToGame(line);
+    games.push(game);
   }
   return games;
 }
@@ -83,7 +91,7 @@ function readInputFileLines(inputFilePath: string): string[] {
   return lines;
 }
 
-function toGame(line: string): Game {
+function parseLineToGame(line: string): Game {
   const [idAsString, ballSetsAsString] = line.split(':');
   const id = idAsString.split(' ')[1];
   const ballSets: ReadonlyMap<string, number>[] = [];
@@ -93,7 +101,7 @@ function toGame(line: string): Game {
       const [ballCountAsString, color] = ballSubsetAsString
         .trimStart()
         .split(' ');
-      ballSet.set(color, Number(ballCountAsString));
+      ballSet.set(color, parseInt(ballCountAsString));
     }
     ballSets.push(ballSet);
   }
@@ -104,7 +112,7 @@ function sumPossibleGameIds(games: readonly Game[]): number {
   let sum = 0;
   for (const game of games) {
     if (game.isPossible()) {
-      sum += Number(game.id);
+      sum += parseInt(game.id);
     }
   }
   return sum;
@@ -113,7 +121,7 @@ function sumPossibleGameIds(games: readonly Game[]): number {
 function sumMinBallSetPowers(games: readonly Game[]): number {
   let sum = 0;
   for (const game of games) {
-    sum += game.minBallSetPower();
+    sum += game.calculateMinBallSetPower();
   }
   return sum;
 }
