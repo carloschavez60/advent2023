@@ -15,96 +15,127 @@ const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
 main();
 
 function main() {
-  // const inputFilePath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
-  // const inputFilePath = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
-  const inputFilePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
+  const testFilePath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
+  const testFilePath2 = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
+  const filePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
 
-  console.time('partOne');
-  const lines: string[] = readInputFileLines(inputFilePath);
-
-  const sum: number = sumCalibrationValues(lines);
-  console.log(sum);
-  console.timeEnd('partOne');
-
-  console.time('partTwo');
-  const sum2: number = sumCalibrationValues2(lines);
-  console.log(sum2);
-  console.timeEnd('partTwo');
+  day1(testFilePath);
+  day1(testFilePath2);
+  day1(filePath);
 }
 
-function readInputFileLines(inputFilePath: string): string[] {
-  const lines = readFileSync(inputFilePath, 'utf8').split('\n');
+function day1(filePath: string) {
+  const lines = readFileLines(filePath);
+  part1(lines);
+  part2(lines);
+}
+
+function readFileLines(path: string): string[] {
+  const lines = readFileSync(path, 'utf8').split('\n');
   lines.pop();
   return lines;
 }
 
-function sumCalibrationValues(lines: readonly string[]): number {
+function part1(lines: readonly string[]) {
+  console.time('partOne');
+  const sum = sumPart1CalibrationValues(lines);
+  console.log(sum);
+  console.timeEnd('partOne');
+}
+
+function sumPart1CalibrationValues(lines: readonly string[]): number {
   let sum = 0;
   for (const line of lines) {
-    sum += toCalibrationValue(line);
+    sum += getPart1CalibrationValue(line);
   }
   return sum;
 }
 
-function toCalibrationValue(line: string): number {
-  let firstDigit: number | undefined;
-  for (let i = 0; i < line.length; i++) {
-    firstDigit = Number(line[i]);
-    if (!isNaN(firstDigit)) {
-      break;
-    }
-  }
-  let lastDigit: number | undefined;
-  for (let i = line.length - 1; i >= 0; i--) {
-    lastDigit = Number(line[i]);
-    if (!isNaN(lastDigit)) {
-      break;
-    }
-  }
+function getPart1CalibrationValue(line: string): number {
+  const firstDigit = findPart1FirstDigit(line);
+  const lastDigit = findPart1LastDigit(line);
   if (firstDigit === undefined || lastDigit === undefined) {
     return 0;
   }
   return firstDigit * 10 + lastDigit;
 }
 
-function sumCalibrationValues2(lines: readonly string[]): number {
+function findPart1FirstDigit(line: string): number | undefined {
+  for (let i = 0; i < line.length; i++) {
+    const digit = parseInt(line[i]);
+    if (!isNaN(digit)) {
+      return digit;
+    }
+  }
+  return undefined;
+}
+
+function findPart1LastDigit(line: string): number | undefined {
+  for (let i = line.length - 1; i >= 0; i--) {
+    const digit = parseInt(line[i]);
+    if (!isNaN(digit)) {
+      return digit;
+    }
+  }
+  return undefined;
+}
+
+function part2(lines: readonly string[]) {
+  console.time('partTwo');
+  const sum: number = sumPart2CalibrationValues(lines);
+  console.log(sum);
+  console.timeEnd('partTwo');
+}
+
+function sumPart2CalibrationValues(lines: readonly string[]): number {
   let sum = 0;
   for (const line of lines) {
-    sum += toCalibrationValue2(line);
+    sum += getPart2CalibrationValue(line);
   }
   return sum;
 }
 
-function toCalibrationValue2(line: string): number {
-  let firstDigit: number | undefined;
-  for (let i = 0; i < line.length; i++) {
-    firstDigit = Number(line[i]);
-    if (isNaN(firstDigit)) {
-      firstDigit = findDigit(line, i);
-    }
-    if (firstDigit !== undefined) {
-      break;
-    }
-  }
-  let lastDigit: number | undefined;
-  for (let i = line.length - 1; i >= 0; i--) {
-    lastDigit = Number(line[i]);
-    if (isNaN(lastDigit)) {
-      lastDigit = findDigit(line, i);
-    }
-    if (lastDigit !== undefined) {
-      break;
-    }
-  }
+function getPart2CalibrationValue(line: string): number {
+  const firstDigit = findPart2FirstDigit(line);
+  const lastDigit = findPart2LastDigit(line);
   if (firstDigit === undefined || lastDigit === undefined) {
     return 0;
   }
   return firstDigit * 10 + lastDigit;
 }
 
-function findDigit(searchString: string, position: number): number | undefined {
+function findPart2FirstDigit(line: string): number | undefined {
+  for (let i = 0; i < line.length; i++) {
+    let digit: number | undefined = parseInt(line[i]);
+    if (isNaN(digit)) {
+      digit = findParsedSpelledDigit(line, i);
+    }
+    if (digit !== undefined) {
+      return digit;
+    }
+  }
+  return undefined;
+}
+
+function findPart2LastDigit(line: string): number | undefined {
+  for (let i = line.length - 1; i >= 0; i--) {
+    let digit: number | undefined = parseInt(line[i]);
+    if (isNaN(digit)) {
+      digit = findParsedSpelledDigit(line, i);
+    }
+    if (digit !== undefined) {
+      return digit;
+    }
+  }
+  return undefined;
+}
+
+function findParsedSpelledDigit(
+  line: string,
+  position: number
+): number | undefined {
   for (const spelledDigit of spelledDigitToDigit.keys()) {
-    if (searchString.startsWith(spelledDigit, position)) {
+    if (line.startsWith(spelledDigit, position)) {
       return spelledDigitToDigit.get(spelledDigit)!;
     }
   }
