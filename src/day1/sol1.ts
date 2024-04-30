@@ -38,29 +38,29 @@ function readFileLines(path: string): string[] {
 
 function part1(lines: readonly string[]) {
   console.time('partOne');
-  const sum = sumPart1CalibrationValues(lines);
+  const sum = sumCalibrationValues(lines);
   console.log(sum);
   console.timeEnd('partOne');
 }
 
-function sumPart1CalibrationValues(lines: readonly string[]): number {
+function sumCalibrationValues(lines: readonly string[]): number {
   let sum = 0;
   for (const line of lines) {
-    sum += getPart1CalibrationValue(line);
+    sum += getCalibrationValue(line);
   }
   return sum;
 }
 
-function getPart1CalibrationValue(line: string): number {
-  const firstDigit = findPart1FirstDigit(line);
-  const lastDigit = findPart1LastDigit(line);
+function getCalibrationValue(line: string): number {
+  const firstDigit = findFirstDigit(line);
+  const lastDigit = findLastDigit(line);
   if (firstDigit === undefined || lastDigit === undefined) {
     return 0;
   }
   return firstDigit * 10 + lastDigit;
 }
 
-function findPart1FirstDigit(line: string): number | undefined {
+function findFirstDigit(line: string): number | undefined {
   for (let i = 0; i < line.length; i++) {
     const digit = parseInt(line[i]);
     if (!isNaN(digit)) {
@@ -70,7 +70,7 @@ function findPart1FirstDigit(line: string): number | undefined {
   return undefined;
 }
 
-function findPart1LastDigit(line: string): number | undefined {
+function findLastDigit(line: string): number | undefined {
   for (let i = line.length - 1; i >= 0; i--) {
     const digit = parseInt(line[i]);
     if (!isNaN(digit)) {
