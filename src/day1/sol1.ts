@@ -27,19 +27,19 @@ function main() {
 function day1(filePath: string) {
   console.time('day1');
 
-  const lines = readFileLines(filePath);
+  const lines: string[] = readFileLines(filePath);
 
-  const part1Result = sumCalibrationValues(lines);
+  const part1Result: number = sumCalibrationValues(lines);
   console.log('part 1 result: ', part1Result);
 
-  const part2Result = sumPart2CalibrationValues(lines);
+  const part2Result: number = sumPart2CalibrationValues(lines);
   console.log('part 2 result: ', part2Result);
 
   console.timeEnd('day1');
 }
 
 function readFileLines(path: string): string[] {
-  const lines = readFileSync(path, 'utf8').split('\n');
+  const lines: string[] = readFileSync(path, 'utf8').split('\n');
   if (lines.at(-1) === '') {
     lines.pop();
   }
@@ -55,11 +55,11 @@ function sumCalibrationValues(lines: readonly string[]): number {
 }
 
 function getCalibrationValue(line: string): number {
-  const firstDigitChar = findFirstDigitCharIn(line);
+  const firstDigitChar: string | undefined = findFirstDigitCharIn(line);
   if (firstDigitChar === undefined) {
     return 0;
   }
-  const lastDigitChar = findLastDigitCharIn(line);
+  const lastDigitChar: string | undefined = findLastDigitCharIn(line);
   if (lastDigitChar === undefined) {
     return 0;
   }
@@ -68,7 +68,7 @@ function getCalibrationValue(line: string): number {
 
 function findFirstDigitCharIn(line: string): string | undefined {
   for (let i = 0; i < line.length; i++) {
-    const char = line[i];
+    const char: string = line[i];
     if (isDigit(char)) {
       return char;
     }
@@ -82,7 +82,7 @@ function isDigit(char: string): boolean {
 
 function findLastDigitCharIn(line: string): string | undefined {
   for (let i = line.length - 1; i >= 0; i--) {
-    const char = line[i];
+    const char: string = line[i];
     if (isDigit(char)) {
       return char;
     }
@@ -99,11 +99,11 @@ function sumPart2CalibrationValues(lines: readonly string[]): number {
 }
 
 function getPart2CalibrationValue(line: string): number {
-  const firstDigitChar = findPart2FirstDigitIn(line);
+  const firstDigitChar: string | undefined = findPart2FirstDigitIn(line);
   if (firstDigitChar === undefined) {
     return 0;
   }
-  const lastDigitChar = findPart2LastDigitIn(line);
+  const lastDigitChar: string | undefined = findPart2LastDigitIn(line);
   if (lastDigitChar === undefined) {
     return 0;
   }
@@ -112,11 +112,11 @@ function getPart2CalibrationValue(line: string): number {
 
 function findPart2FirstDigitIn(line: string): string | undefined {
   for (let i = 0; i < line.length; i++) {
-    const char = line[i];
+    const char: string = line[i];
     if (isDigit(char)) {
       return char;
     }
-    const digitChar = findCharDigitIn(line, i);
+    const digitChar: string | undefined = findCharDigitIn(line, i);
     if (digitChar !== undefined) {
       return digitChar;
     }
@@ -126,11 +126,11 @@ function findPart2FirstDigitIn(line: string): string | undefined {
 
 function findPart2LastDigitIn(line: string): string | undefined {
   for (let i = line.length - 1; i >= 0; i--) {
-    const char = line[i];
+    const char: string = line[i];
     if (isDigit(char)) {
       return char;
     }
-    const digitChar = findCharDigitIn(line, i);
+    const digitChar: string | undefined = findCharDigitIn(line, i);
     if (digitChar !== undefined) {
       return digitChar;
     }
