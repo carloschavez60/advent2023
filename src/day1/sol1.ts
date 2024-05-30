@@ -1,46 +1,49 @@
 import { readFileSync } from 'node:fs';
 
-const spelledDigitToDigit: ReadonlyMap<string, number> = new Map([
-  ['one', 1],
-  ['two', 2],
-  ['three', 3],
-  ['four', 4],
-  ['five', 5],
-  ['six', 6],
-  ['seven', 7],
-  ['eight', 8],
-  ['nine', 9],
+const spelledDigitToDigitChar: ReadonlyMap<string, string> = new Map([
+  ['one', '1'],
+  ['two', '2'],
+  ['three', '3'],
+  ['four', '4'],
+  ['five', '5'],
+  ['six', '6'],
+  ['seven', '7'],
+  ['eight', '8'],
+  ['nine', '9'],
 ]);
 
 main();
 
 function main() {
   const testFilePath = process.cwd() + '/src/day1/test-input.txt'; // 142 142
-  const testFilePath2 = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
+  const testFile2Path = process.cwd() + '/src/day1/part-two-test-input.txt'; // 209 281
   const filePath = process.cwd() + '/src/day1/input.txt'; // 54573 54591
 
   day1(testFilePath);
-  day1(testFilePath2);
+  day1(testFile2Path);
   day1(filePath);
 }
 
 function day1(filePath: string) {
+  console.time('day1');
+
   const lines = readFileLines(filePath);
-  part1(lines);
-  part2(lines);
+
+  const part1Result = sumCalibrationValues(lines);
+  console.log('part 1 result: ', part1Result);
+
+  const part2Result = sumPart2CalibrationValues(lines);
+  console.log('part 2 result: ', part2Result);
+
+  console.timeEnd('day1');
 }
 
 function readFileLines(path: string): string[] {
   const lines = readFileSync(path, 'utf8').split('\n');
-  lines.pop();
+  if (lines.at(-1) === '') {
+    lines.pop();
+  }
   return lines;
-}
-
-function part1(lines: readonly string[]) {
-  console.time('partOne');
-  const sum = sumCalibrationValues(lines);
-  console.log(sum);
-  console.timeEnd('partOne');
 }
 
 function sumCalibrationValues(lines: readonly string[]): number {
@@ -52,39 +55,39 @@ function sumCalibrationValues(lines: readonly string[]): number {
 }
 
 function getCalibrationValue(line: string): number {
-  const firstDigit = findFirstDigit(line);
-  const lastDigit = findLastDigit(line);
-  if (firstDigit === undefined || lastDigit === undefined) {
+  const firstDigitChar = findFirstDigitCharIn(line);
+  if (firstDigitChar === undefined) {
     return 0;
   }
-  return firstDigit * 10 + lastDigit;
+  const lastDigitChar = findLastDigitCharIn(line);
+  if (lastDigitChar === undefined) {
+    return 0;
+  }
+  return parseInt(firstDigitChar + lastDigitChar);
 }
 
-function findFirstDigit(line: string): number | undefined {
+function findFirstDigitCharIn(line: string): string | undefined {
   for (let i = 0; i < line.length; i++) {
-    const digit = parseInt(line[i]);
-    if (!isNaN(digit)) {
-      return digit;
+    const char = line[i];
+    if (isDigit(char)) {
+      return char;
     }
   }
   return undefined;
 }
 
-function findLastDigit(line: string): number | undefined {
+function isDigit(char: string): boolean {
+  return '0' <= char && char <= '9';
+}
+
+function findLastDigitCharIn(line: string): string | undefined {
   for (let i = line.length - 1; i >= 0; i--) {
-    const digit = parseInt(line[i]);
-    if (!isNaN(digit)) {
-      return digit;
+    const char = line[i];
+    if (isDigit(char)) {
+      return char;
     }
   }
   return undefined;
-}
-
-function part2(lines: readonly string[]) {
-  console.time('partTwo');
-  const sum: number = sumPart2CalibrationValues(lines);
-  console.log(sum);
-  console.timeEnd('partTwo');
 }
 
 function sumPart2CalibrationValues(lines: readonly string[]): number {
@@ -96,47 +99,49 @@ function sumPart2CalibrationValues(lines: readonly string[]): number {
 }
 
 function getPart2CalibrationValue(line: string): number {
-  const firstDigit = findPart2FirstDigit(line);
-  const lastDigit = findPart2LastDigit(line);
-  if (firstDigit === undefined || lastDigit === undefined) {
+  const firstDigitChar = findPart2FirstDigitIn(line);
+  if (firstDigitChar === undefined) {
     return 0;
   }
-  return firstDigit * 10 + lastDigit;
+  const lastDigitChar = findPart2LastDigitIn(line);
+  if (lastDigitChar === undefined) {
+    return 0;
+  }
+  return parseInt(firstDigitChar + lastDigitChar);
 }
 
-function findPart2FirstDigit(line: string): number | undefined {
+function findPart2FirstDigitIn(line: string): string | undefined {
   for (let i = 0; i < line.length; i++) {
-    let digit: number | undefined = parseInt(line[i]);
-    if (isNaN(digit)) {
-      digit = findParsedSpelledDigit(line, i);
+    const char = line[i];
+    if (isDigit(char)) {
+      return char;
     }
-    if (digit !== undefined) {
-      return digit;
+    const digitChar = findCharDigitIn(line, i);
+    if (digitChar !== undefined) {
+      return digitChar;
     }
   }
   return undefined;
 }
 
-function findPart2LastDigit(line: string): number | undefined {
+function findPart2LastDigitIn(line: string): string | undefined {
   for (let i = line.length - 1; i >= 0; i--) {
-    let digit: number | undefined = parseInt(line[i]);
-    if (isNaN(digit)) {
-      digit = findParsedSpelledDigit(line, i);
+    const char = line[i];
+    if (isDigit(char)) {
+      return char;
     }
-    if (digit !== undefined) {
-      return digit;
+    const digitChar = findCharDigitIn(line, i);
+    if (digitChar !== undefined) {
+      return digitChar;
     }
   }
   return undefined;
 }
 
-function findParsedSpelledDigit(
-  line: string,
-  position: number
-): number | undefined {
-  for (const spelledDigit of spelledDigitToDigit.keys()) {
+function findCharDigitIn(line: string, position: number): string | undefined {
+  for (const [spelledDigit, digitChar] of spelledDigitToDigitChar.entries()) {
     if (line.startsWith(spelledDigit, position)) {
-      return spelledDigitToDigit.get(spelledDigit)!;
+      return digitChar;
     }
   }
   return undefined;
