@@ -30,31 +30,41 @@ class MapNumber {
 main();
 
 function main() {
-  // const inputFilePath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
-  const inputFilePath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
+  const testFilePath = process.cwd() + '/src/day3/test-input.txt'; // 4361 467835
+  const filePath = process.cwd() + '/src/day3/input.txt'; // 556367 89471771
 
-  console.time('partOne');
-  const lines: string[] = readInputFileLines(inputFilePath);
-  fillEdges(lines);
-
-  const sum: number = sumPartNumbers(lines);
-  console.log(sum);
-  console.timeEnd('partOne');
-
-  console.time('partTwo');
-  const sum2: number = sumGearRatios(lines);
-  console.log(sum2);
-  console.timeEnd('partTwo');
+  day3(testFilePath);
+  day3(filePath);
 }
 
-function readInputFileLines(inputFilePath: string): string[] {
-  const lines = readFileSync(inputFilePath, 'utf8').split('\n');
-  lines.pop();
+function day3(filePath: string) {
+  console.time('day3');
+
+  const lines: string[] = readFileLines(filePath);
+  fillEdges(lines); // Mutates lines
+
+  const part1Result: number = sumPartNumbers(lines);
+  console.log('part 1 result:', part1Result);
+
+  const part2Result: number = sumGearRatios(lines);
+  console.log('part 2 result:', part2Result);
+
+  console.timeEnd('day3');
+}
+
+function readFileLines(path: string): string[] {
+  const lines = readFileSync(path, 'utf8').split('\n');
+  if (lines.at(-1) === '') {
+    lines.pop();
+  }
   return lines;
 }
 
+/**
+ * Mutates lines
+ */
 function fillEdges(lines: string[]) {
-  const ghostLine = ''.padStart(lines[0].length + 2, '.');
+  const ghostLine: string = ''.padStart(lines[0].length + 2, '.');
   lines.unshift(ghostLine);
   lines.push(ghostLine);
   for (let y = 1; y < lines.length - 1; y++) {
@@ -66,33 +76,48 @@ function sumPartNumbers(lines: string[]): number {
   let sum = 0;
   for (let y = 1; y < lines.length - 1; y++) {
     for (let x = 1; x < lines[y].length - 1; x++) {
-      if (isStringDigit(lines[y][x])) {
-        const n = getNearMapNumber(x, y, lines);
-        x += n.length;
-        if (n.isPartNumber(lines)) {
-          sum += n.value;
-        }
+      const partNumber: MapNumber | undefined = findPartNumber(x, y, lines);
+      if (partNumber !== undefined) {
+        sum += partNumber.value;
+        x += partNumber.length;
       }
     }
   }
   return sum;
 }
 
+function findPartNumber(
+  x: number,
+  y: number,
+  lines: string[]
+): MapNumber | undefined {
+  const char = lines[y][x];
+  if (!isDigit(char)) {
+    return undefined;
+  }
+  const mapNumber: MapNumber = getNearMapNumber(x, y, lines);
+  if (!mapNumber.isPartNumber(lines)) {
+    return undefined;
+  }
+  return mapNumber;
+}
+
 function getNearMapNumber(x: number, y: number, lines: string[]): MapNumber {
   let sdigits = lines[y][x];
-  let numX = x;
-  for (let i = 1; isStringDigit(lines[y][x + i]); i++) {
+
+  for (let i = 1; isDigit(lines[y][x + i]); i++) {
     sdigits = sdigits + lines[y][x + i];
   }
-  for (let i = 1; isStringDigit(lines[y][x - i]); i++) {
+  let numX = x;
+  for (let i = 1; isDigit(lines[y][x - i]); i++) {
     sdigits = lines[y][x - i] + sdigits;
     numX--;
   }
   return new MapNumber(Number(sdigits), sdigits.length, numX, y);
 }
 
-function isStringDigit(char: string): boolean {
-  return !isNaN(Number(char));
+function isDigit(char: string): boolean {
+  return '0' <= char && char <= '9';
 }
 
 function sumGearRatios(lines: string[]): number {
@@ -110,14 +135,14 @@ function sumGearRatios(lines: string[]): number {
 function getGearRatio(x: number, y: number, lines: string[]): number {
   let auxn: MapNumber;
   let count = 0;
-  if (isStringDigit(lines[y][x - 1])) {
+  if (isDigit(lines[y][x - 1])) {
     const n = getNearMapNumber(x - 1, y, lines);
     if (n.isPartNumber(lines)) {
       count++;
       auxn = n;
     }
   }
-  if (isStringDigit(lines[y][x + 1])) {
+  if (isDigit(lines[y][x + 1])) {
     const n = getNearMapNumber(x + 1, y, lines);
     if (n.isPartNumber(lines)) {
       count++;
@@ -128,9 +153,8 @@ function getGearRatio(x: number, y: number, lines: string[]): number {
     }
   }
   for (let i = x - 1; i <= x + 1; i++) {
-    if (isStringDigit(lines[y - 1][i])) {
+    if (isDigit(lines[y - 1][i])) {
       const n = getNearMapNumber(i, y - 1, lines);
-      i = n.x + n.length;
       if (n.isPartNumber(lines)) {
         count++;
         if (count === 2) {
@@ -138,12 +162,12 @@ function getGearRatio(x: number, y: number, lines: string[]): number {
         }
         auxn = n;
       }
+      i = n.x + n.length;
     }
   }
   for (let i = x - 1; i <= x + 1; i++) {
-    if (isStringDigit(lines[y + 1][i])) {
+    if (isDigit(lines[y + 1][i])) {
       const n = getNearMapNumber(i, y + 1, lines);
-      i = n.x + n.length;
       if (n.isPartNumber(lines)) {
         count++;
         if (count === 2) {
@@ -151,6 +175,7 @@ function getGearRatio(x: number, y: number, lines: string[]): number {
         }
         auxn = n;
       }
+      i = n.x + n.length;
     }
   }
   return 0;
