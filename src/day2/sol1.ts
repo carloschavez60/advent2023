@@ -7,10 +7,13 @@ const ballCountLimits: ReadonlyMap<string, number> = new Map([
 ]);
 
 class Game {
-  constructor(
-    public readonly id: string,
-    public readonly ballSets: ReadonlyMap<string, number>[]
-  ) {}
+  readonly id: string;
+  readonly ballSets: ReadonlyMap<string, number>[];
+
+  constructor(id: string, ballSets: ReadonlyMap<string, number>[]) {
+    this.id = id;
+    this.ballSets = ballSets;
+  }
 
   isPossible(): boolean {
     for (const ballSet of this.ballSets) {
@@ -83,7 +86,7 @@ function readGames(filePath: string): Game[] {
 }
 
 function readFileLines(path: string): string[] {
-  const lines = readFileSync(path, 'utf8').split('\n');
+  const lines: string[] = readFileSync(path, 'utf8').split('\n');
   if (lines.at(-1) === '') {
     lines.pop();
   }
