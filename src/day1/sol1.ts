@@ -116,7 +116,7 @@ function findPart2FirstDigitIn(line: string): string | undefined {
     if (isDigit(char)) {
       return char;
     }
-    const digitChar: string | undefined = findCharDigitIn(line, i);
+    const digitChar: string | undefined = findDigitCharIn(line, i);
     if (digitChar !== undefined) {
       return digitChar;
     }
@@ -130,7 +130,7 @@ function findPart2LastDigitIn(line: string): string | undefined {
     if (isDigit(char)) {
       return char;
     }
-    const digitChar: string | undefined = findCharDigitIn(line, i);
+    const digitChar: string | undefined = findDigitCharIn(line, i);
     if (digitChar !== undefined) {
       return digitChar;
     }
@@ -138,7 +138,7 @@ function findPart2LastDigitIn(line: string): string | undefined {
   return undefined;
 }
 
-function findCharDigitIn(line: string, position: number): string | undefined {
+function findDigitCharIn(line: string, position: number): string | undefined {
   for (const [spelledDigit, digitChar] of spelledDigitToDigitChar.entries()) {
     if (line.startsWith(spelledDigit, position)) {
       return digitChar;
