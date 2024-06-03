@@ -13,17 +13,33 @@ class MapNumber {
     this.y = y;
   }
 
-  isPartNumber(lines: string[]): boolean {
-    const { length, x, y } = this;
-    if (isSymbol(lines[y][x - 1]) || isSymbol(lines[y][x + length])) {
+  isPartNumber(lines: readonly string[]): boolean {
+    const leftChar = lines[this.y][this.x - 1];
+    if (this.#isSymbol(leftChar)) {
       return true;
     }
-    for (let i = x - 1; i <= x + length; i++) {
-      if (isSymbol(lines[y - 1][i]) || isSymbol(lines[y + 1][i])) {
+    const rightChar = lines[this.y][this.x + this.length];
+    if (this.#isSymbol(rightChar)) {
+      return true;
+    }
+    for (let i = this.x - 1; i <= this.x + this.length; i++) {
+      const topChar = lines[this.y - 1][i];
+      if (this.#isSymbol(topChar)) {
+        return true;
+      }
+      const bottomChar = lines[this.y + 1][i];
+      if (this.#isSymbol(bottomChar)) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * check char is not a digit character
+   */
+  #isSymbol(char: string): boolean {
+    return char !== '.';
   }
 }
 
@@ -53,7 +69,7 @@ function day3(filePath: string) {
 }
 
 function readFileLines(path: string): string[] {
-  const lines = readFileSync(path, 'utf8').split('\n');
+  const lines: string[] = readFileSync(path, 'utf8').split('\n');
   if (lines.at(-1) === '') {
     lines.pop();
   }
@@ -72,55 +88,48 @@ function fillEdges(lines: string[]) {
   }
 }
 
-function sumPartNumbers(lines: string[]): number {
+function sumPartNumbers(lines: readonly string[]): number {
   let sum = 0;
   for (let y = 1; y < lines.length - 1; y++) {
     for (let x = 1; x < lines[y].length - 1; x++) {
-      const partNumber: MapNumber | undefined = findPartNumber(x, y, lines);
-      if (partNumber !== undefined) {
-        sum += partNumber.value;
-        x += partNumber.length;
+      const char = lines[y][x];
+      if (isDigit(char)) {
+        const mapNumber: MapNumber = getNearMapNumber(x, y, lines);
+        x += mapNumber.length;
+        if (mapNumber.isPartNumber(lines)) {
+          sum += mapNumber.value;
+        }
       }
     }
   }
   return sum;
 }
 
-function findPartNumber(
-  x: number,
-  y: number,
-  lines: string[]
-): MapNumber | undefined {
-  const char = lines[y][x];
-  if (!isDigit(char)) {
-    return undefined;
-  }
-  const mapNumber: MapNumber = getNearMapNumber(x, y, lines);
-  if (!mapNumber.isPartNumber(lines)) {
-    return undefined;
-  }
-  return mapNumber;
-}
-
-function getNearMapNumber(x: number, y: number, lines: string[]): MapNumber {
-  let sdigits = lines[y][x];
-
-  for (let i = 1; isDigit(lines[y][x + i]); i++) {
-    sdigits = sdigits + lines[y][x + i];
-  }
-  let numX = x;
-  for (let i = 1; isDigit(lines[y][x - i]); i++) {
-    sdigits = lines[y][x - i] + sdigits;
-    numX--;
-  }
-  return new MapNumber(Number(sdigits), sdigits.length, numX, y);
-}
-
 function isDigit(char: string): boolean {
   return '0' <= char && char <= '9';
 }
 
-function sumGearRatios(lines: string[]): number {
+/**
+ * check lines[y][x] is digit character
+ */
+function getNearMapNumber(
+  x: number,
+  y: number,
+  lines: readonly string[]
+): MapNumber {
+  let digitChars = lines[y][x];
+  for (let i = 1; isDigit(lines[y][x + i]); i++) {
+    digitChars = digitChars + lines[y][x + i];
+  }
+  let mapNumberX = x;
+  for (let i = 1; isDigit(lines[y][x - i]); i++) {
+    digitChars = lines[y][x - i] + digitChars;
+    mapNumberX--;
+  }
+  return new MapNumber(parseInt(digitChars), digitChars.length, mapNumberX, y);
+}
+
+function sumGearRatios(lines: readonly string[]): number {
   let sum = 0;
   for (let y = 1; y < lines.length - 1; y++) {
     for (let x = 1; x < lines[y].length - 1; x++) {
@@ -132,55 +141,50 @@ function sumGearRatios(lines: string[]): number {
   return sum;
 }
 
-function getGearRatio(x: number, y: number, lines: string[]): number {
-  let auxn: MapNumber;
-  let count = 0;
-  if (isDigit(lines[y][x - 1])) {
-    const n = getNearMapNumber(x - 1, y, lines);
-    if (n.isPartNumber(lines)) {
-      count++;
-      auxn = n;
+function getGearRatio(x: number, y: number, lines: readonly string[]): number {
+  let auxPartNumber: MapNumber | undefined;
+  const leftChar = lines[y][x - 1];
+  if (isDigit(leftChar)) {
+    const mapNumber = getNearMapNumber(x - 1, y, lines);
+    if (mapNumber.isPartNumber(lines)) {
+      auxPartNumber = mapNumber;
     }
   }
-  if (isDigit(lines[y][x + 1])) {
-    const n = getNearMapNumber(x + 1, y, lines);
-    if (n.isPartNumber(lines)) {
-      count++;
-      if (count === 2) {
-        return auxn!.value * n.value;
+  const rightChar = lines[y][x + 1];
+  if (isDigit(rightChar)) {
+    const mapNumber = getNearMapNumber(x + 1, y, lines);
+    if (mapNumber.isPartNumber(lines)) {
+      if (auxPartNumber !== undefined) {
+        return auxPartNumber.value * mapNumber.value;
       }
-      auxn = n;
-    }
-  }
-  for (let i = x - 1; i <= x + 1; i++) {
-    if (isDigit(lines[y - 1][i])) {
-      const n = getNearMapNumber(i, y - 1, lines);
-      if (n.isPartNumber(lines)) {
-        count++;
-        if (count === 2) {
-          return auxn!.value * n.value;
-        }
-        auxn = n;
-      }
-      i = n.x + n.length;
+      auxPartNumber = mapNumber;
     }
   }
   for (let i = x - 1; i <= x + 1; i++) {
-    if (isDigit(lines[y + 1][i])) {
-      const n = getNearMapNumber(i, y + 1, lines);
-      if (n.isPartNumber(lines)) {
-        count++;
-        if (count === 2) {
-          return auxn!.value * n.value;
+    const topChar = lines[y - 1][i];
+    if (isDigit(topChar)) {
+      const mapNumber = getNearMapNumber(i, y - 1, lines);
+      i = mapNumber.x + mapNumber.length;
+      if (mapNumber.isPartNumber(lines)) {
+        if (auxPartNumber !== undefined) {
+          return auxPartNumber.value * mapNumber.value;
         }
-        auxn = n;
+        auxPartNumber = mapNumber;
       }
-      i = n.x + n.length;
+    }
+  }
+  for (let i = x - 1; i <= x + 1; i++) {
+    const bottomChar = lines[y + 1][i];
+    if (isDigit(bottomChar)) {
+      const mapNumber = getNearMapNumber(i, y + 1, lines);
+      i = mapNumber.x + mapNumber.length;
+      if (mapNumber.isPartNumber(lines)) {
+        if (auxPartNumber !== undefined) {
+          return auxPartNumber.value * mapNumber.value;
+        }
+        auxPartNumber = mapNumber;
+      }
     }
   }
   return 0;
-}
-
-function isSymbol(char: string): boolean {
-  return char !== '.';
 }
