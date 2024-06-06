@@ -15,7 +15,7 @@ class Game {
     this.ballSets = ballSets;
   }
 
-  isPossible(): boolean {
+  get isPossible(): boolean {
     for (const ballSet of this.ballSets) {
       for (const [color, ballCount] of ballSet.entries()) {
         const ballCountLimit: number | undefined = ballCountLimits.get(color);
@@ -30,15 +30,15 @@ class Game {
     return true;
   }
 
-  minBallSetPower(): number {
+  get minBallSetPower(): number {
     let power = 1;
-    for (const ballCount of this.#minBallSet().values()) {
+    for (const ballCount of this.#minBallSet.values()) {
       power *= ballCount;
     }
     return power;
   }
 
-  #minBallSet(): Map<string, number> {
+  get #minBallSet(): Map<string, number> {
     const minBallSet = new Map<string, number>();
     for (const ballSet of this.ballSets) {
       for (const [color, ballCount] of ballSet.entries()) {
@@ -116,7 +116,7 @@ function getBallSet(ballSetStr: string): Map<string, number> {
 function sumPossibleGameIds(games: readonly Game[]): number {
   let sum = 0;
   for (const game of games) {
-    if (game.isPossible()) {
+    if (game.isPossible) {
       sum += parseInt(game.id);
     }
   }
@@ -126,7 +126,7 @@ function sumPossibleGameIds(games: readonly Game[]): number {
 function sumMinBallSetPowers(games: readonly Game[]): number {
   let sum = 0;
   for (const game of games) {
-    sum += game.minBallSetPower();
+    sum += game.minBallSetPower;
   }
   return sum;
 }
