@@ -1,33 +1,42 @@
 import { readFileSync } from 'node:fs';
 
 class MapNumber {
-  value: number;
-  length: number;
-  x: number;
-  y: number;
+  readonly value: number;
+  readonly length: number;
+  readonly x: number;
+  readonly y: number;
 
-  constructor(value: number, length: number, x: number, y: number) {
+  readonly #lines: readonly string[];
+
+  constructor(
+    value: number,
+    length: number,
+    x: number,
+    y: number,
+    lines: readonly string[]
+  ) {
     this.value = value;
     this.length = length;
     this.x = x;
     this.y = y;
+    this.#lines = lines;
   }
 
-  isPartNumber(lines: readonly string[]): boolean {
-    const leftChar = lines[this.y][this.x - 1];
+  get isPartNumber(): boolean {
+    const leftChar = this.#lines[this.y][this.x - 1];
     if (this.#isSymbol(leftChar)) {
       return true;
     }
-    const rightChar = lines[this.y][this.x + this.length];
+    const rightChar = this.#lines[this.y][this.x + this.length];
     if (this.#isSymbol(rightChar)) {
       return true;
     }
     for (let i = this.x - 1; i <= this.x + this.length; i++) {
-      const topChar = lines[this.y - 1][i];
+      const topChar = this.#lines[this.y - 1][i];
       if (this.#isSymbol(topChar)) {
         return true;
       }
-      const bottomChar = lines[this.y + 1][i];
+      const bottomChar = this.#lines[this.y + 1][i];
       if (this.#isSymbol(bottomChar)) {
         return true;
       }
@@ -36,7 +45,7 @@ class MapNumber {
   }
 
   /**
-   * check char is not a digit character
+   * Make sure char is not a digit character.
    */
   #isSymbol(char: string): boolean {
     return char !== '.';
@@ -77,7 +86,7 @@ function readFileLines(path: string): string[] {
 }
 
 /**
- * Mutates lines
+ * Mutates lines.
  */
 function fillEdges(lines: string[]) {
   const ghostLine: string = ''.padStart(lines[0].length + 2, '.');
@@ -93,13 +102,15 @@ function sumPartNumbers(lines: readonly string[]): number {
   for (let y = 1; y < lines.length - 1; y++) {
     for (let x = 1; x < lines[y].length - 1; x++) {
       const char = lines[y][x];
-      if (isDigit(char)) {
-        const mapNumber: MapNumber = getNearMapNumber(x, y, lines);
-        x += mapNumber.length;
-        if (mapNumber.isPartNumber(lines)) {
-          sum += mapNumber.value;
-        }
+      if (!isDigit(char)) {
+        continue;
       }
+      const mapNumber: MapNumber = getNearMapNumber(x, y, lines);
+      x += mapNumber.length;
+      if (!mapNumber.isPartNumber) {
+        continue;
+      }
+      sum += mapNumber.value;
     }
   }
   return sum;
@@ -110,7 +121,7 @@ function isDigit(char: string): boolean {
 }
 
 /**
- * check lines[y][x] is digit character
+ * Make sure lines[y][x] is digit character.
  */
 function getNearMapNumber(
   x: number,
@@ -126,19 +137,31 @@ function getNearMapNumber(
     digitChars = lines[y][x - i] + digitChars;
     mapNumberX--;
   }
-  return new MapNumber(parseInt(digitChars), digitChars.length, mapNumberX, y);
+  return new MapNumber(
+    parseInt(digitChars),
+    digitChars.length,
+    mapNumberX,
+    y,
+    lines
+  );
 }
 
 function sumGearRatios(lines: readonly string[]): number {
   let sum = 0;
   for (let y = 1; y < lines.length - 1; y++) {
     for (let x = 1; x < lines[y].length - 1; x++) {
-      if (lines[y][x] === '*') {
-        sum += getGearRatio(x, y, lines);
+      const char: string = lines[y][x];
+      if (!isGear(char)) {
+        continue;
       }
+      sum += getGearRatio(x, y, lines);
     }
   }
   return sum;
+}
+
+function isGear(char: string): boolean {
+  return char === '*';
 }
 
 function getGearRatio(x: number, y: number, lines: readonly string[]): number {
@@ -146,14 +169,14 @@ function getGearRatio(x: number, y: number, lines: readonly string[]): number {
   const leftChar = lines[y][x - 1];
   if (isDigit(leftChar)) {
     const mapNumber = getNearMapNumber(x - 1, y, lines);
-    if (mapNumber.isPartNumber(lines)) {
+    if (mapNumber.isPartNumber) {
       auxPartNumber = mapNumber;
     }
   }
   const rightChar = lines[y][x + 1];
   if (isDigit(rightChar)) {
     const mapNumber = getNearMapNumber(x + 1, y, lines);
-    if (mapNumber.isPartNumber(lines)) {
+    if (mapNumber.isPartNumber) {
       if (auxPartNumber !== undefined) {
         return auxPartNumber.value * mapNumber.value;
       }
@@ -162,29 +185,35 @@ function getGearRatio(x: number, y: number, lines: readonly string[]): number {
   }
   for (let i = x - 1; i <= x + 1; i++) {
     const topChar = lines[y - 1][i];
-    if (isDigit(topChar)) {
-      const mapNumber = getNearMapNumber(i, y - 1, lines);
-      i = mapNumber.x + mapNumber.length;
-      if (mapNumber.isPartNumber(lines)) {
-        if (auxPartNumber !== undefined) {
-          return auxPartNumber.value * mapNumber.value;
-        }
-        auxPartNumber = mapNumber;
-      }
+    if (!isDigit(topChar)) {
+      continue;
     }
+    const mapNumber = getNearMapNumber(i, y - 1, lines);
+    i = mapNumber.x + mapNumber.length;
+    if (!mapNumber.isPartNumber) {
+      continue;
+    }
+    if (auxPartNumber === undefined) {
+      auxPartNumber = mapNumber;
+      continue;
+    }
+    return auxPartNumber.value * mapNumber.value;
   }
   for (let i = x - 1; i <= x + 1; i++) {
     const bottomChar = lines[y + 1][i];
-    if (isDigit(bottomChar)) {
-      const mapNumber = getNearMapNumber(i, y + 1, lines);
-      i = mapNumber.x + mapNumber.length;
-      if (mapNumber.isPartNumber(lines)) {
-        if (auxPartNumber !== undefined) {
-          return auxPartNumber.value * mapNumber.value;
-        }
-        auxPartNumber = mapNumber;
-      }
+    if (!isDigit(bottomChar)) {
+      continue;
     }
+    const mapNumber = getNearMapNumber(i, y + 1, lines);
+    i = mapNumber.x + mapNumber.length;
+    if (!mapNumber.isPartNumber) {
+      continue;
+    }
+    if (auxPartNumber === undefined) {
+      auxPartNumber = mapNumber;
+      continue;
+    }
+    return auxPartNumber.value * mapNumber.value;
   }
   return 0;
 }
