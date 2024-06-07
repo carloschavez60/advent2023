@@ -19,13 +19,11 @@ class Game {
     for (const ballSet of this.ballSets) {
       for (const [color, ballCount] of ballSet.entries()) {
         const ballCountLimit: number | undefined = ballCountLimits.get(color);
-        if (ballCountLimit === undefined) {
-          continue;
+        if (ballCountLimit !== undefined) {
+          if (!(ballCount <= ballCountLimit)) {
+            return false;
+          }
         }
-        if (ballCount <= ballCountLimit) {
-          continue;
-        }
-        return false;
       }
     }
     return true;
@@ -117,10 +115,9 @@ function getBallSet(ballSetStr: string): Map<string, number> {
 function sumPossibleGameIds(games: readonly Game[]): number {
   let sum = 0;
   for (const game of games) {
-    if (!game.isPossible) {
-      continue;
+    if (game.isPossible) {
+      sum += parseInt(game.id);
     }
-    sum += parseInt(game.id);
   }
   return sum;
 }
