@@ -22,9 +22,10 @@ class Game {
         if (ballCountLimit === undefined) {
           continue;
         }
-        if (ballCount > ballCountLimit) {
-          return false;
+        if (ballCount <= ballCountLimit) {
+          continue;
         }
+        return false;
       }
     }
     return true;
@@ -116,9 +117,10 @@ function getBallSet(ballSetStr: string): Map<string, number> {
 function sumPossibleGameIds(games: readonly Game[]): number {
   let sum = 0;
   for (const game of games) {
-    if (game.isPossible) {
-      sum += parseInt(game.id);
+    if (!game.isPossible) {
+      continue;
     }
+    sum += parseInt(game.id);
   }
   return sum;
 }
