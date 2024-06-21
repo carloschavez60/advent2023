@@ -1,10 +1,17 @@
 import { readFileSync } from 'node:fs';
 
-const ballCountLimits: ReadonlyMap<string, number> = new Map([
+const ballCountLimitByBallColor: ReadonlyMap<string, number> = new Map([
   ['red', 12],
   ['green', 13],
   ['blue', 14],
 ]);
+
+class GameData {
+  constructor(
+    readonly id: string,
+    readonly ballSets: ReadonlyMap<string, number>[]
+  ) {}
+}
 
 class Game {
   readonly id: string;
@@ -18,7 +25,8 @@ class Game {
   get isPossible(): boolean {
     for (const ballSet of this.ballSets) {
       for (const [color, ballCount] of ballSet.entries()) {
-        const ballCountLimit: number | undefined = ballCountLimits.get(color);
+        const ballCountLimit: number | undefined =
+          ballCountLimitByBallColor.get(color);
         if (ballCountLimit !== undefined) {
           if (!(ballCount <= ballCountLimit)) {
             return false;
