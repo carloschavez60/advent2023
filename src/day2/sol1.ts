@@ -6,13 +6,6 @@ const ballCountLimitByBallColor: ReadonlyMap<string, number> = new Map([
   ['blue', 14],
 ]);
 
-class GameData {
-  constructor(
-    readonly id: string,
-    readonly ballSets: ReadonlyMap<string, number>[]
-  ) {}
-}
-
 class Game {
   readonly id: string;
   readonly ballSets: ReadonlyMap<string, number>[];
