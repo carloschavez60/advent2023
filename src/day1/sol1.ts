@@ -12,18 +12,15 @@ const digitCharBySpelledDigit: ReadonlyMap<string, string> = new Map([
   ['nine', '9'],
 ]);
 
-/**
- * Every line of the file must have at least one digit character.
- */
 function day1Part1(filePath: string) {
-  const lines = readFileLines(filePath);
+  const lines: string[] = readFileLines(filePath);
 
-  const part1Result = sumCalibrationValues(lines);
+  const part1Result: number = sumCalibrationValues(lines);
   console.log('part 1 result:', part1Result);
 }
 
 function readFileLines(filePath: string): string[] {
-  const lines = readFileSync(filePath, 'utf8').split('\n');
+  const lines: string[] = readFileSync(filePath, 'utf8').split('\n');
   if (lines[lines.length - 1] === '') {
     lines.pop();
   }
@@ -38,41 +35,23 @@ function sumCalibrationValues(lines: readonly string[]): number {
   return sum;
 }
 
+/**
+ * Returns 0 if there are no digit characters on the line.
+ */
 function getCalibrationValue(line: string): number {
-  const [firstDigitChar, firstDigitCharIndex] = getFirstDigitChar(line);
-  let lastDigitChar = getLastDigitChar(line, firstDigitCharIndex);
+  const firstDigitChar: string | undefined = searchFirstDigitChar(line);
+  if (firstDigitChar === undefined) {
+    return 0;
+  }
+  const lastDigitChar: string | undefined = searchLastDigitChar(line);
   if (lastDigitChar === undefined) {
-    lastDigitChar = firstDigitChar;
+    return 0;
   }
   return parseInt(firstDigitChar + lastDigitChar);
 }
 
-/**
- * @returns [firstDigitChar, firstDigitCharIndex]
- */
-function getFirstDigitChar(line: string): [string, number] {
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (isDigit(char)) {
-      return [char, i];
-    }
-  }
-  throw new Error('Panic: Line must have at least one digit character.');
-}
-
-function isDigit(char: string): boolean {
-  return '0' <= char && char <= '9';
-}
-
-/**
- * Returns undefined if the last digit is the same as the first digit.
- */
-function getLastDigitChar(
-  line: string,
-  firstDigitCharIndex: number
-): string | undefined {
-  for (let i = line.length - 1; i > firstDigitCharIndex; i--) {
-    const char = line[i];
+function searchFirstDigitChar(line: string): string | undefined {
+  for (const char of line) {
     if (isDigit(char)) {
       return char;
     }
@@ -80,14 +59,24 @@ function getLastDigitChar(
   return undefined;
 }
 
-/**
- * Every line of the file must have at least
- * one digit character or spelled digit.
- */
-function day1Part2(filePath: string) {
-  const lines = readFileLines(filePath);
+function isDigit(char: string): boolean {
+  return '0' <= char && char <= '9';
+}
 
-  const part2Result = sumPart2CalibrationValues(lines);
+function searchLastDigitChar(line: string): string | undefined {
+  for (let i = line.length - 1; i >= 0; i--) {
+    const char: string = line[i];
+    if (isDigit(char)) {
+      return char;
+    }
+  }
+  return undefined;
+}
+
+function day1Part2(filePath: string) {
+  const lines: string[] = readFileLines(filePath);
+
+  const part2Result: number = sumPart2CalibrationValues(lines);
   console.log('part 2 result:', part2Result);
 }
 
@@ -99,47 +88,31 @@ function sumPart2CalibrationValues(lines: readonly string[]): number {
   return sum;
 }
 
+/**
+ * Returns 0 if there are no digit characters on the line.
+ */
 function getPart2CalibrationValue(line: string): number {
-  const [firstDigitChar, firstDigitCharIndex] = getPart2FirstDigitChar(line);
-  let lastDigitChar = getPart2LastDigitChar(line, firstDigitCharIndex);
+  const firstDigitChar: string | undefined = searchPart2FirstDigitChar(line);
+  if (firstDigitChar === undefined) {
+    return 0;
+  }
+  let lastDigitChar: string | undefined = searchPart2LastDigitChar(line);
   if (lastDigitChar === undefined) {
-    lastDigitChar = firstDigitChar;
+    return 0;
   }
   return parseInt(firstDigitChar + lastDigitChar);
 }
 
-/**
- * @returns [firstDigitChar, firstDigitCharIndex]
- */
-function getPart2FirstDigitChar(line: string): [string, number] {
+function searchPart2FirstDigitChar(line: string): string | undefined {
   for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (isDigit(char)) {
-      return [char, i];
-    }
-    const digitChar = searchSpelledDigitAndParse(line, i);
-    if (digitChar !== undefined) {
-      return [digitChar, i];
-    }
-  }
-  throw new Error(
-    'Panic: Line must have at least one digit character or spelled digit.'
-  );
-}
-
-/**
- * Returns undefined if the last digit is the same as the first digit.
- */
-function getPart2LastDigitChar(
-  line: string,
-  firstDigitCharIndex: number
-): string | undefined {
-  for (let i = line.length - 1; i > firstDigitCharIndex; i--) {
-    const char = line[i];
+    const char: string = line[i];
     if (isDigit(char)) {
       return char;
     }
-    const digitChar = searchSpelledDigitAndParse(line, i);
+    const digitChar: string | undefined = searchDigitCharAsSpelledDigit(
+      line,
+      i
+    );
     if (digitChar !== undefined) {
       return digitChar;
     }
@@ -147,10 +120,24 @@ function getPart2LastDigitChar(
   return undefined;
 }
 
-/**
- * @returns digitChar
- */
-function searchSpelledDigitAndParse(
+function searchPart2LastDigitChar(line: string): string | undefined {
+  for (let i = line.length - 1; i >= 0; i--) {
+    const char: string = line[i];
+    if (isDigit(char)) {
+      return char;
+    }
+    const digitChar: string | undefined = searchDigitCharAsSpelledDigit(
+      line,
+      i
+    );
+    if (digitChar !== undefined) {
+      return digitChar;
+    }
+  }
+  return undefined;
+}
+
+function searchDigitCharAsSpelledDigit(
   line: string,
   position: number
 ): string | undefined {
