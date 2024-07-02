@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "1": "node --watch ./build/day1/sol1.js",
+    "1": "tsx watch ./src/day1/sol1.js",
     "2": "node --watch ./build/day2/sol1.js",
     "3": "node --watch ./build/day3/sol1.js",
     "4": "node --watch ./build/day4/sol1.js",
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.4",
+    "tsx": "^4.16.0",
     "typescript": "^5.3.3"
   }
 }
