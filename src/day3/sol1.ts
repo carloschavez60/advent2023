@@ -44,10 +44,10 @@ class MapNumber {
     return false;
   }
 
-  /**
-   * Make sure char is not a digit character.
-   */
   #isSymbol(char: string): boolean {
+    if ('0' <= char && char <= '9') {
+      throw new Error('Panic: char must not be a digit character.');
+    }
     return char !== '.';
   }
 }
