@@ -4,7 +4,7 @@
     "1": "tsx watch ./src/day1/sol1.ts",
     "2": "tsx watch ./src/day2/sol1.ts",
     "3": "tsx watch ./src/day3/sol1.ts",
-    "4": "node --watch ./build/day4/sol1.js",
+    "4": "tsx watch ./src/day4/sol1.ts",
     "5": "node --watch ./build/day5/sol1.js",
     "6": "node --watch ./build/day6/sol1.js",
     "7": "node --watch ./build/day7/sol1.js",

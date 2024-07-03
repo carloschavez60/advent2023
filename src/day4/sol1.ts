@@ -1,27 +1,30 @@
-import { readFileLines } from '../utils.js';
+import { readFileSync } from 'node:fs';
 
 class Card {
-  winningNumbers: number[];
-  numbers: number[];
+  readonly winningNumbers: readonly number[];
+  readonly numbers: readonly number[];
 
-  constructor(winningNumbers: number[], numbers: number[]) {
+  constructor(winningNumbers: readonly number[], numbers: readonly number[]) {
     this.winningNumbers = winningNumbers;
     this.numbers = numbers;
   }
 
-  getWorth(): number {
-    const c = this.countWinningNumbers();
-    if (c === 0) {
+  /**
+   * Returns 0 if any number is a winning number.
+   */
+  worth(): number {
+    const count = this.countWinningNumbers();
+    if (count === 0) {
       return 0;
     }
-    return 2 ** (c - 1);
+    return 2 ** (count - 1);
   }
 
   countWinningNumbers(): number {
     let count = 0;
-    for (const n of this.numbers) {
-      for (const wn of this.winningNumbers) {
-        if (n === wn) {
+    for (const num of this.numbers) {
+      for (const winningNum of this.winningNumbers) {
+        if (num === winningNum) {
           count++;
         }
       }
@@ -30,69 +33,84 @@ class Card {
   }
 }
 
-main();
+function day4Part1(filePath: string) {
+  const cards: Card[] = readCardsFromFile(filePath);
 
-function main() {
-  // const inputPath = process.cwd() + '/src/day4/test-input.txt'; // 13 30
-  const inputPath = process.cwd() + '/src/day4/input.txt'; // 23673 12263631
-
-  const l = readFileLines(inputPath);
-  const c = toCards(l);
-
-  console.time('partOne');
-  const s = sumCardWorths(c);
-  console.log(s);
-  console.timeEnd('partOne');
-
-  console.time('partTwo');
-  const s2 = sumCardInstances(c);
-  console.log(s2);
-  console.timeEnd('partTwo');
+  const part1Result: number = sumCardWorths(cards);
+  console.log('part 1 result:', part1Result);
 }
 
-function toCards(lines: string[]): Card[] {
+function readCardsFromFile(filePath: string): Card[] {
+  const lines: string[] = readFileLines(filePath);
   const cards: Card[] = [];
-  for (const l of lines) {
-    const [swn, sn] = l.split(':')[1].split('|');
-    const wn: number[] = [];
-    for (const s of swn.trim().split(' ')) {
-      if (s !== '') {
-        wn.push(Number(s));
+  for (const line of lines) {
+    const [winningNumbersStr, numbersStr] = line.split(':')[1].split('|');
+    const winningNumbers: number[] = [];
+    for (const winningNumberStr of winningNumbersStr.trim().split(' ')) {
+      if (winningNumberStr !== '') {
+        winningNumbers.push(parseInt(winningNumberStr));
       }
     }
-    const n: number[] = [];
-    for (const s of sn.trimStart().split(' ')) {
-      if (s !== '') {
-        n.push(Number(s));
+    const numbers: number[] = [];
+    for (const numberStr of numbersStr.trimStart().split(' ')) {
+      if (numberStr !== '') {
+        numbers.push(parseInt(numberStr));
       }
     }
-    cards.push(new Card(wn, n));
+    cards.push(new Card(winningNumbers, numbers));
   }
   return cards;
 }
 
-function sumCardWorths(cards: Card[]): number {
+function readFileLines(filePath: string): string[] {
+  const lines: string[] = readFileSync(filePath, 'utf8').split('\n');
+  if (lines[lines.length - 1] === '') {
+    lines.pop();
+  }
+  return lines;
+}
+
+function sumCardWorths(cards: readonly Card[]): number {
   let sum = 0;
-  for (const c of cards) {
-    sum += c.getWorth();
+  for (const card of cards) {
+    sum += card.worth();
   }
   return sum;
 }
 
-function sumCardInstances(cards: Card[]): number {
-  const copiesArr: number[] = [];
+function day4Part2(filePath: string) {
+  const cards: Card[] = readCardsFromFile(filePath);
+
+  const part2Result: number = sumCardInstances(cards);
+  console.log('part 2 result:', part2Result);
+}
+
+function sumCardInstances(cards: readonly Card[]): number {
+  const copiesQueue: number[] = [];
   let sum = 0;
-  for (const c of cards) {
-    const instances = 1 + (copiesArr.shift() ?? 0);
-    const count = c.countWinningNumbers();
-    for (let i = 0; i < count; i++) {
-      if (i < copiesArr.length) {
-        copiesArr[i] += instances;
+  for (const card of cards) {
+    let cardCopies: number | undefined = copiesQueue.shift();
+    if (cardCopies === undefined) {
+      cardCopies = 0; // no copies
+    }
+    const cardInstances: number = 1 + cardCopies; // original plus copies
+    for (let i = 0; i < card.countWinningNumbers(); i++) {
+      if (i < copiesQueue.length) {
+        copiesQueue[i] += cardInstances;
       } else {
-        copiesArr.push(instances);
+        copiesQueue.push(cardInstances);
       }
     }
-    sum += instances;
+    sum += cardInstances;
   }
   return sum;
 }
+
+const testFilePath = process.cwd() + '/src/day4/test-input.txt';
+const filePath = process.cwd() + '/src/day4/input.txt';
+
+day4Part1(testFilePath); // 13
+day4Part2(testFilePath); // 30
+
+day4Part1(filePath); // 23673
+day4Part2(filePath); // 12263631
