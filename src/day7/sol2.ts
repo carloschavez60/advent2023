@@ -1,4 +1,4 @@
-import { readFileLines } from '../utils.js';
+import { readFileSync } from 'node:fs';
 
 class Hand {
   value: string;
@@ -179,6 +179,14 @@ function main() {
   const tw2 = getTotalWinnings(h);
   console.log(tw2);
   console.timeEnd('partTwo');
+}
+
+function readFileLines(filePath: string): string[] {
+  const lines: string[] = readFileSync(filePath, 'utf8').split('\n');
+  if (lines[lines.length - 1] === '') {
+    lines.pop();
+  }
+  return lines;
 }
 
 function toHands(lines: string[]): Hand[] {

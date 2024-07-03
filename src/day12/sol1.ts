@@ -1,4 +1,4 @@
-import { readFileLines } from '../utils.js';
+import { readFileSync } from 'node:fs';
 
 const cache: Map<string, number> = new Map();
 
@@ -32,6 +32,14 @@ function main() {
   const s2 = sumPossibleArrangementCounts(r2);
   console.log(s2);
   console.timeEnd('partTwo');
+}
+
+function readFileLines(filePath: string): string[] {
+  const lines: string[] = readFileSync(filePath, 'utf8').split('\n');
+  if (lines[lines.length - 1] === '') {
+    lines.pop();
+  }
+  return lines;
 }
 
 function toRows(lines: string[]): Row[] {

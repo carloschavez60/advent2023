@@ -1,4 +1,4 @@
-import { readFileLines } from '../utils.js';
+import { readFileSync } from 'node:fs';
 
 const instructionToNodeId = {
   L: 'leftId',
@@ -36,6 +36,14 @@ function main() {
   const c2 = countTotalSteps(i, n);
   console.log(c2);
   console.timeEnd('partTwo');
+}
+
+function readFileLines(filePath: string): string[] {
+  const lines: string[] = readFileSync(filePath, 'utf8').split('\n');
+  if (lines[lines.length - 1] === '') {
+    lines.pop();
+  }
+  return lines;
 }
 
 function toInstructionsAndNodes(

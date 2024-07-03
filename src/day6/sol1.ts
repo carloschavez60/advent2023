@@ -1,4 +1,4 @@
-import { readFileLines } from '../utils.js';
+import { readFileSync } from 'node:fs';
 
 class Race {
   time: number;
@@ -30,6 +30,14 @@ function main() {
   const c = countWaysToWin(r);
   console.log(c);
   console.timeEnd('partTwo');
+}
+
+function readFileLines(filePath: string): string[] {
+  const lines: string[] = readFileSync(filePath, 'utf8').split('\n');
+  if (lines[lines.length - 1] === '') {
+    lines.pop();
+  }
+  return lines;
 }
 
 function toRaces(lines: string[]): Race[] {
