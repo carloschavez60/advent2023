@@ -3,7 +3,7 @@
   "scripts": {
     "1": "tsx watch ./src/day1/sol1.ts",
     "2": "tsx watch ./src/day2/sol1.ts",
-    "3": "node --watch ./build/day3/sol1.js",
+    "3": "tsx watch ./src/day3/sol1.ts",
     "4": "node --watch ./build/day4/sol1.js",
     "5": "node --watch ./build/day5/sol1.js",
     "6": "node --watch ./build/day6/sol1.js",
