@@ -1,11 +1,9 @@
 import { readFileSync } from 'node:fs';
 
-type Map = MapRange[];
-
 class MapRange {
-  start: number;
-  length: number;
-  destinationStart: number;
+  readonly start: number;
+  readonly length: number;
+  readonly destinationStart: number;
 
   constructor(start: number, length: number, destinationStart: number) {
     this.start = start;
@@ -15,8 +13,8 @@ class MapRange {
 }
 
 class Range {
-  start: number;
-  length: number;
+  readonly start: number;
+  readonly length: number;
 
   constructor(start: number, length: number) {
     this.start = start;
@@ -24,100 +22,112 @@ class Range {
   }
 }
 
-main();
+function day5Part1(filePath: string) {
+  const [seeds, maps]: [number[], MapRange[][]] =
+    readSeedsAndMapsFromFile(filePath);
 
-function main() {
-  // const inputPath = process.cwd() + '/src/day5/test-input.txt'; // 35 46
-  const inputPath = process.cwd() + '/src/day5/input.txt'; // 226172555 47909639
-
-  const [s, m] = toSeedsAndMaps(inputPath);
-
-  console.time('partOne');
-  const l = getMinLocation(s, m);
-  console.log(l);
-  console.timeEnd('partOne');
-
-  const sr = getSeedRanges(s);
-
-  console.time('partTwo');
-  const l2 = getMinLocation2(sr, m);
-  console.log(l2);
-  console.timeEnd('partTwo');
+  const part1Result: number = getMinLocation(seeds, maps);
+  console.log('part 1 result:', part1Result);
 }
 
-function toSeedsAndMaps(inputPath: string): [number[], Map[]] {
-  const chunks = readFileSync(inputPath, 'utf8').split('\n\n');
+function readSeedsAndMapsFromFile(inputPath: string): [number[], MapRange[][]] {
+  const chunks: string[] = readFileSync(inputPath, 'utf8').split('\n\n');
   chunks[chunks.length - 1] = chunks[chunks.length - 1].slice(0, -1);
 
   const seeds: number[] = [];
-  for (const s of chunks.shift()!.split(': ')[1].split(' ')) {
-    seeds.push(Number(s));
+  for (const seedStr of chunks[0].split(': ')[1].split(' ')) {
+    seeds.push(parseInt(seedStr));
   }
 
-  const m = getMaps(chunks);
-  return [seeds, m];
+  const maps: MapRange[][] = parseChunksToMaps(chunks);
+  return [seeds, maps];
 }
 
-function getMaps(chunks: string[]): Map[] {
-  const maps: Map[] = [];
-  for (const smap of chunks) {
-    const lines = smap.split('\n');
-    lines.shift();
+function parseChunksToMaps(chunks: readonly string[]): MapRange[][] {
+  const maps: MapRange[][] = [];
+  for (let i = 1; i < chunks.length; i++) {
+    const mapStr = chunks[i];
+    const lines = mapStr.split('\n');
 
-    const map: MapRange[] = [];
-    for (const l of lines) {
-      const [sdestStart, sstart, slen] = l.split(' ');
-      map.push(new MapRange(Number(sstart), Number(slen), Number(sdestStart)));
+    const mapRanges: MapRange[] = [];
+    for (let j = 1; j < lines.length; j++) {
+      const [destStartStr, startStr, lengthStr] = lines[j].split(' ');
+      mapRanges.push(
+        new MapRange(
+          parseInt(startStr),
+          parseInt(lengthStr),
+          parseInt(destStartStr)
+        )
+      );
     }
-
-    addComplementRanges(map);
-    maps.push(map);
+    maps.push(mapRanges);
   }
   return maps;
 }
 
-function addComplementRanges(map: MapRange[]) {
-  map.sort((a, b) => a.start - b.start);
-  let start = 0;
-  for (let i = 0; i < map.length; i++) {
-    const range = map[i];
-    if (range.start > start) {
-      map.splice(i, 0, new MapRange(start, range.start - start, start));
-      i++;
+/**
+ * Precondition: Maps are sorted. Category of destination is equal
+ * to category of source of next element in maps.
+ */
+function getMinLocation(
+  seeds: readonly number[],
+  maps: readonly (readonly MapRange[])[]
+): number {
+  let minLocation: number = getLocationFromSeed(seeds[0], maps);
+  for (let i = 1; i < seeds.length; i++) {
+    const seed: number = seeds[i];
+    const location: number = getLocationFromSeed(seed, maps);
+    minLocation = Math.min(minLocation, location);
+  }
+  return minLocation;
+}
+
+/**
+ * Precondition: Maps are sorted. Category of destination is equal
+ * to category of source of next element in maps.
+ */
+function getLocationFromSeed(
+  seed: number,
+  maps: readonly (readonly MapRange[])[]
+): number {
+  let location: number = seed;
+  for (const mapRanges of maps) {
+    location = getNextCategory(location, mapRanges);
+  }
+  return location;
+}
+
+function getNextCategory(
+  category: number,
+  mapRanges: readonly MapRange[]
+): number {
+  for (const mapRange of mapRanges) {
+    if (
+      mapRange.start <= category &&
+      category < mapRange.start + mapRange.length
+    ) {
+      const diff: number = category - mapRange.start;
+      return mapRange.destinationStart + diff;
     }
-    start = range.start + range.length;
   }
-  map.push(new MapRange(start, Infinity, start));
+  return category;
 }
 
-function getMinLocation(seeds: number[], maps: Map[]): number {
-  let minLoc = Infinity;
-  for (const s of seeds) {
-    const l = toLocation(s, maps);
-    minLoc = Math.min(minLoc, l);
+function day5Part2(filePath: string) {
+  const [seeds, maps]: [number[], MapRange[][]] =
+    readSeedsAndMapsFromFile(filePath);
+
+  const seedRanges: Range[] = getSeedRanges(seeds);
+
+  for (const mapRanges of maps) {
+    sortAndAddComplementMapRanges(mapRanges); // mutates mapRanges
   }
-  return minLoc;
+
+  const part2Result: number = getPart2MinLocation(seedRanges, maps);
+  console.log('part 2 result:', part2Result);
 }
 
-function toLocation(seed: number, maps: Map[]): number {
-  let loc = seed;
-  for (const m of maps) {
-    loc = toNextCategory(loc, m);
-  }
-  return loc;
-}
-
-function toNextCategory(c: number, map: MapRange[]): number {
-  for (const mr of map) {
-    if (mr.start <= c && c < mr.start + mr.length) {
-      const diff = c - mr.start;
-      return mr.destinationStart + diff;
-    }
-  }
-  return c;
-}
-
-function getSeedRanges(seeds: number[]): Range[] {
+function getSeedRanges(seeds: readonly number[]): Range[] {
   const seedRanges: Range[] = [];
   for (let i = 0; i < seeds.length; i += 2) {
     seedRanges.push(new Range(seeds[i], seeds[i + 1]));
@@ -125,43 +135,120 @@ function getSeedRanges(seeds: number[]): Range[] {
   return seedRanges;
 }
 
-function getMinLocation2(seedRanges: Range[], maps: Map[]): number {
-  let minLoc = Infinity;
-  for (const sr of seedRanges) {
-    const l = toMinLocation(sr, maps);
-    minLoc = Math.min(minLoc, l);
+/**
+ * Mutates mapRanges
+ */
+function sortAndAddComplementMapRanges(mapRanges: MapRange[]) {
+  mapRanges.sort((a, b) => a.start - b.start);
+  let start = 0;
+  for (let i = 0; i < mapRanges.length; i++) {
+    const mapRange: MapRange = mapRanges[i];
+    if (mapRange.start > start) {
+      mapRanges.splice(
+        i,
+        0,
+        new MapRange(start, mapRange.start - start, start)
+      );
+      i++;
+    }
+    start = mapRange.start + mapRange.length;
   }
-  return minLoc;
 }
 
-function toMinLocation(seedRange: Range, maps: Map[]): number {
-  let minLoc = Infinity;
-  let remainer = new Range(seedRange.start, seedRange.length);
-  while (remainer.length > 0) {
-    const consumed = consumeRange(remainer, maps);
-    minLoc = Math.min(minLoc, consumed.start);
-    remainer.start += consumed.length;
-    remainer.length -= consumed.length;
+/**
+ * Precondition: mapRanges of every map are sorted by mapRange.start
+ * and have complement mapRanges.
+ */
+function getPart2MinLocation(
+  seedRanges: readonly Range[],
+  maps: readonly (readonly MapRange[])[]
+): number {
+  let minLocation: number = getMinLocationFromSeedRange(seedRanges[0], maps);
+  for (let i = 1; i < seedRanges.length; i++) {
+    const seedRange: Range = seedRanges[i];
+    const location: number = getMinLocationFromSeedRange(seedRange, maps);
+    minLocation = Math.min(minLocation, location);
   }
-  return minLoc;
+  return minLocation;
 }
 
-function consumeRange(remainer: Range, maps: Map[]): Range {
-  let consumed = new Range(remainer.start, remainer.length);
-  for (const m of maps) {
-    consumed = toNextCategoryRange(consumed, m);
+/**
+ * Precondition: mapRanges of every map are sorted by mapRange.start
+ * and have complement mapRanges.
+ * Precondition: seedRange.length > 0
+ */
+function getMinLocationFromSeedRange(
+  seedRange: Range,
+  maps: readonly (readonly MapRange[])[]
+): number {
+  let minLocation: number | undefined;
+  let remainingSeedRange: Range = seedRange;
+  while (remainingSeedRange.length > 0) {
+    const partialLocationRange: Range = getPartialLocationRange(
+      remainingSeedRange,
+      maps
+    );
+    if (minLocation === undefined) {
+      minLocation = partialLocationRange.start;
+    } else {
+      minLocation = Math.min(minLocation, partialLocationRange.start);
+    }
+    remainingSeedRange = new Range(
+      remainingSeedRange.start + partialLocationRange.length,
+      remainingSeedRange.length - partialLocationRange.length
+    );
   }
-  return consumed;
+  return minLocation!;
 }
 
-function toNextCategoryRange(cr: Range, map: MapRange[]): Range {
-  for (const mr of map) {
-    if (mr.start <= cr.start && cr.start < mr.start + mr.length) {
-      const diff = cr.start - mr.start;
-      const nextStart = mr.destinationStart + diff;
-      const nextLen = Math.min(cr.length, mr.length - diff);
-      return new Range(nextStart, nextLen);
+/**
+ * Precondition: mapRanges of every map are sorted by mapRange.start
+ * and have complement mapRanges.
+ */
+function getPartialLocationRange(
+  remainingSeedRange: Range,
+  maps: readonly (readonly MapRange[])[]
+): Range {
+  let partialLocationRange: Range = remainingSeedRange;
+  for (const mapRanges of maps) {
+    partialLocationRange = getNextPartialCategoryRange(
+      partialLocationRange,
+      mapRanges
+    );
+  }
+  return partialLocationRange;
+}
+
+/**
+ * Precondition: mapRanges of every map are sorted by mapRange.start
+ * and have complement mapRanges.
+ */
+function getNextPartialCategoryRange(
+  categoryRange: Range,
+  mapRanges: readonly MapRange[]
+): Range {
+  for (const mapRange of mapRanges) {
+    if (
+      mapRange.start <= categoryRange.start &&
+      categoryRange.start < mapRange.start + mapRange.length
+    ) {
+      const diff: number = categoryRange.start - mapRange.start;
+      const nextStart: number = mapRange.destinationStart + diff;
+      const nextLength: number = Math.min(
+        categoryRange.length,
+        mapRange.length - diff
+      );
+      return new Range(nextStart, nextLength);
     }
   }
-  throw new Error('MapRange not found');
+  return categoryRange;
 }
+
+const testFilePath = process.cwd() + '/src/day5/test-input.txt';
+const filePath = process.cwd() + '/src/day5/input.txt';
+
+day5Part1(testFilePath); // 35
+day5Part2(testFilePath); // 46
+
+day5Part1(filePath); // 226172555
+day5Part2(filePath); // 47909639
