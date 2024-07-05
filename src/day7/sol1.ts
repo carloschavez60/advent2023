@@ -3,10 +3,38 @@ import { readFileSync } from 'node:fs';
 class Hand {
   value: string;
   bid: number;
-  strength: number;
-  strengthWithJokers: number;
 
-  #labels = [
+  #hexDigitByLabel: ReadonlyMap<string, string> = new Map([
+    ['2', '2'],
+    ['3', '3'],
+    ['4', '4'],
+    ['5', '5'],
+    ['6', '6'],
+    ['7', '7'],
+    ['8', '8'],
+    ['9', '9'],
+    ['T', 'A'],
+    ['J', 'B'],
+    ['Q', 'C'],
+    ['K', 'D'],
+    ['A', 'E'],
+  ]);
+  #hexDigitByLabelWithJokers: ReadonlyMap<string, string> = new Map([
+    ['J', '1'],
+    ['2', '2'],
+    ['3', '3'],
+    ['4', '4'],
+    ['5', '5'],
+    ['6', '6'],
+    ['7', '7'],
+    ['8', '8'],
+    ['9', '9'],
+    ['T', 'A'],
+    ['Q', 'C'],
+    ['K', 'D'],
+    ['A', 'E'],
+  ]);
+  #noJokerLabels: readonly string[] = [
     '2',
     '3',
     '4',
@@ -19,164 +47,136 @@ class Hand {
     'Q',
     'K',
     'A',
-  ] as const;
-  #labelToHex = {
-    '1': '1',
-    '2': '2',
-    '3': '3',
-    '4': '4',
-    '5': '5',
-    '6': '6',
-    '7': '7',
-    '8': '8',
-    '9': '9',
-    T: 'A',
-    J: 'B',
-    Q: 'C',
-    K: 'D',
-    A: 'E',
-  } as const;
-  #labelToHexWithJokers = {
-    J: '1',
-    '1': '1',
-    '2': '2',
-    '3': '3',
-    '4': '4',
-    '5': '5',
-    '6': '6',
-    '7': '7',
-    '8': '8',
-    '9': '9',
-    T: 'A',
-    Q: 'C',
-    K: 'D',
-    A: 'E',
-  } as const;
+  ];
 
   constructor(value: string, bid: number) {
     this.value = value;
     this.bid = bid;
-    this.strength = this.#getStrength(
-      value,
-      this.#getTypeStrength(value),
-      this.#labelToHex
-    );
-    this.strengthWithJokers = this.#getStrength(
-      value,
-      this.#getTypeStrengthWithJokers(value),
-      this.#labelToHexWithJokers
+  }
+
+  strength() {
+    return this.#calculateStrength(
+      this.#calculateTypeStrength(this.value),
+      this.#hexDigitByLabel
     );
   }
 
-  #getStrength(
-    value: string,
+  #calculateStrength(
     typeStrength: string,
-    labelToHex: { [label: string]: string }
+    hexDigitByLabel: ReadonlyMap<string, string>
   ): number {
-    const labels = typeStrength + value;
     let hex = '';
-    for (const l of labels) {
-      hex += labelToHex[l];
+    for (const label of this.value) {
+      hex += hexDigitByLabel.get(label);
     }
+    hex = typeStrength + hex;
     return parseInt(hex, 16);
   }
 
-  #getTypeStrength(value: string): string {
-    const digits = value.split('');
-    digits.sort();
-    if (digits[0] === digits[1]) {
-      if (digits[1] === digits[2]) {
-        if (digits[2] === digits[3]) {
-          if (digits[3] === digits[4]) {
-            return '7';
+  /**
+   * @returns hexDigit
+   */
+  #calculateTypeStrength(value: string): string {
+    const labels: string[] = value.split('');
+    labels.sort();
+    if (labels[0] === labels[1]) {
+      if (labels[1] === labels[2]) {
+        if (labels[2] === labels[3]) {
+          if (labels[3] === labels[4]) {
+            return '8'; // Five of a kind
           } else {
-            return '6';
+            return '7'; // Four of a kind
           }
         } else {
-          if (digits[3] === digits[4]) {
-            return '5';
+          if (labels[3] === labels[4]) {
+            return '6'; // Full house
           } else {
-            return '4';
+            return '5'; // Three of a kind
           }
         }
       } else {
-        if (digits[2] === digits[3]) {
-          if (digits[3] === digits[4]) {
-            return '5';
+        if (labels[2] === labels[3]) {
+          if (labels[3] === labels[4]) {
+            return '6'; // Full house
           } else {
-            return '3';
+            return '4'; // Two pair
           }
         } else {
-          if (digits[3] === digits[4]) {
-            return '3';
+          if (labels[3] === labels[4]) {
+            return '4'; // Two pair
           } else {
-            return '2';
+            return '3'; // One pair
           }
         }
       }
     } else {
-      if (digits[1] === digits[2]) {
-        if (digits[2] === digits[3]) {
-          if (digits[3] === digits[4]) {
-            return '6';
+      if (labels[1] === labels[2]) {
+        if (labels[2] === labels[3]) {
+          if (labels[3] === labels[4]) {
+            return '7'; // Four of a kind
           } else {
-            return '4';
+            return '5'; // Three of a kind
           }
         } else {
-          if (digits[3] === digits[4]) {
-            return '3';
+          if (labels[3] === labels[4]) {
+            return '4'; // Two pair
           } else {
-            return '2';
+            return '3'; // One pair
           }
         }
       } else {
-        if (digits[2] === digits[3]) {
-          if (digits[3] === digits[4]) {
-            return '4';
+        if (labels[2] === labels[3]) {
+          if (labels[3] === labels[4]) {
+            return '5'; // Three of a kind
           } else {
-            return '2';
+            return '3'; // One pair
           }
         } else {
-          if (digits[3] === digits[4]) {
-            return '2';
+          if (labels[3] === labels[4]) {
+            return '3'; // One pair
           } else {
-            return '1';
+            return '2'; // High card
           }
         }
       }
     }
   }
 
-  #getTypeStrengthWithJokers(value: string): string {
+  strengthWithJokers() {
+    return this.#calculateStrength(
+      this.#typeStrengthWithJokers(),
+      this.#hexDigitByLabelWithJokers
+    );
+  }
+
+  #typeStrengthWithJokers(): string {
     let max = 0;
-    for (const label of this.#labels) {
-      const typeStrength = this.#getTypeStrength(value.replaceAll('J', label));
-      max = Math.max(Number(typeStrength), max);
+    for (const label of this.#noJokerLabels) {
+      const typeStrength = this.#calculateTypeStrength(
+        this.value.replaceAll('J', label)
+      );
+      max = Math.max(max, parseInt(typeStrength, 16));
     }
     return String(max);
   }
 }
 
-main();
+function day6Part1(filePath: string) {
+  const hands: Hand[] = readHandsFromFile(filePath);
+  hands.sort((a, b) => a.strength() - b.strength());
 
-function main() {
-  // const inputPath = process.cwd() + '/src/day7/test-input.txt'; // 6440 5905
-  const inputPath = process.cwd() + '/src/day7/input.txt'; // 248569531 250382098
+  const part1Result: number = getTotalWinnings(hands);
+  console.log('part 1 result:', part1Result);
+}
 
-  const l = readFileLines(inputPath);
-  const h = toHands(l);
-
-  console.time('partOne');
-  h.sort((a, b) => a.strength - b.strength);
-  const tw = getTotalWinnings(h);
-  console.log(tw);
-  console.timeEnd('partOne');
-
-  console.time('partTwo');
-  h.sort((a, b) => a.strengthWithJokers - b.strengthWithJokers);
-  const tw2 = getTotalWinnings(h);
-  console.log(tw2);
-  console.timeEnd('partTwo');
+function readHandsFromFile(filePath: string): Hand[] {
+  const lines: string[] = readFileLines(filePath);
+  const hands: Hand[] = [];
+  for (const l of lines) {
+    const [value, sbid] = l.split(' ');
+    hands.push(new Hand(value, Number(sbid)));
+  }
+  return hands;
 }
 
 function readFileLines(filePath: string): string[] {
@@ -187,21 +187,32 @@ function readFileLines(filePath: string): string[] {
   return lines;
 }
 
-function toHands(lines: string[]): Hand[] {
-  const hands: Hand[] = [];
-  for (const l of lines) {
-    const [value, sbid] = l.split(' ');
-    hands.push(new Hand(value, Number(sbid)));
-  }
-  return hands;
-}
-
+/**
+ * Precondition: Hands are ordered by strength.
+ */
 function getTotalWinnings(orderedHands: Hand[]): number {
   let sum = 0;
   let rank = 1;
-  for (const h of orderedHands) {
-    sum += rank * h.bid;
+  for (const hand of orderedHands) {
+    sum += rank * hand.bid;
     rank++;
   }
   return sum;
 }
+
+function day6Part2(filePath: string) {
+  const hands: Hand[] = readHandsFromFile(filePath);
+  hands.sort((a, b) => a.strengthWithJokers() - b.strengthWithJokers());
+
+  const part2Result: number = getTotalWinnings(hands);
+  console.log('part 2 result:', part2Result);
+}
+
+const testFilePath = process.cwd() + '/src/day7/test-input.txt';
+const filePath = process.cwd() + '/src/day7/input.txt';
+
+day6Part1(testFilePath); // 6440
+day6Part2(testFilePath); // 5905
+
+day6Part1(filePath); // 248569531
+day6Part2(filePath); // 250382098
