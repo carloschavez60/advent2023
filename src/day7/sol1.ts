@@ -161,7 +161,7 @@ class Hand {
   }
 }
 
-function day6Part1(filePath: string) {
+function day7Part1(filePath: string) {
   const hands: Hand[] = readHandsFromFile(filePath);
   hands.sort((a, b) => a.strength() - b.strength());
 
@@ -200,7 +200,7 @@ function getTotalWinnings(orderedHands: Hand[]): number {
   return sum;
 }
 
-function day6Part2(filePath: string) {
+function day7Part2(filePath: string) {
   const hands: Hand[] = readHandsFromFile(filePath);
   hands.sort((a, b) => a.strengthWithJokers() - b.strengthWithJokers());
 
@@ -211,8 +211,8 @@ function day6Part2(filePath: string) {
 const testFilePath = process.cwd() + '/src/day7/test-input.txt';
 const filePath = process.cwd() + '/src/day7/input.txt';
 
-day6Part1(testFilePath); // 6440
-day6Part2(testFilePath); // 5905
+day7Part1(testFilePath); // 6440
+day7Part2(testFilePath); // 5905
 
-day6Part1(filePath); // 248569531
-day6Part2(filePath); // 250382098
+day7Part1(filePath); // 248569531
+day7Part2(filePath); // 250382098
