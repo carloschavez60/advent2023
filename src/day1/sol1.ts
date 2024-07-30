@@ -13,13 +13,13 @@ const digitCharBySpelledDigit: ReadonlyMap<string, string> = new Map([
 ]);
 
 function day1Part1(filePath: string) {
-  let lines = readFileLines(filePath);
-  let part1Result = sumCalibrationValues(lines);
+  const lines = readFileLines(filePath);
+  const part1Result = sumCalibrationValues(lines);
   console.log('part 1 result:', part1Result);
 }
 
 function readFileLines(filePath: string): string[] {
-  let lines = readFileSync(filePath, 'utf8').split('\n');
+  const lines = readFileSync(filePath, 'utf8').split('\n');
   if (lines[lines.length - 1] === '') {
     lines.pop();
   }
@@ -28,7 +28,7 @@ function readFileLines(filePath: string): string[] {
 
 function sumCalibrationValues(lines: string[]): number {
   let sum = 0;
-  for (let line of lines) {
+  for (const line of lines) {
     sum += getCalibrationValue(line);
   }
   return sum;
@@ -38,11 +38,11 @@ function sumCalibrationValues(lines: string[]): number {
  * Returns 0 if there are no digit characters on the line.
  */
 function getCalibrationValue(line: string): number {
-  let firstDigitChar = searchFirstDigitChar(line);
+  const firstDigitChar = searchFirstDigitChar(line);
   if (firstDigitChar === undefined) {
     return 0;
   }
-  let lastDigitChar = searchLastDigitChar(line);
+  const lastDigitChar = searchLastDigitChar(line);
   if (lastDigitChar === undefined) {
     return 0;
   }
@@ -50,7 +50,7 @@ function getCalibrationValue(line: string): number {
 }
 
 function searchFirstDigitChar(line: string): string | undefined {
-  for (let char of line) {
+  for (const char of line) {
     if (isDigit(char)) {
       return char;
     }
@@ -64,7 +64,7 @@ function isDigit(char: string): boolean {
 
 function searchLastDigitChar(line: string): string | undefined {
   for (let i = line.length - 1; i >= 0; i--) {
-    let char = line[i];
+    const char = line.charAt(i);
     if (isDigit(char)) {
       return char;
     }
@@ -73,14 +73,14 @@ function searchLastDigitChar(line: string): string | undefined {
 }
 
 function day1Part2(filePath: string) {
-  let lines = readFileLines(filePath);
-  let part2Result = sumPart2CalibrationValues(lines);
+  const lines = readFileLines(filePath);
+  const part2Result = sumPart2CalibrationValues(lines);
   console.log('part 2 result:', part2Result);
 }
 
 function sumPart2CalibrationValues(lines: string[]): number {
   let sum = 0;
-  for (let line of lines) {
+  for (const line of lines) {
     sum += getPart2CalibrationValue(line);
   }
   return sum;
@@ -90,11 +90,11 @@ function sumPart2CalibrationValues(lines: string[]): number {
  * Returns 0 if there are no digit characters on the line.
  */
 function getPart2CalibrationValue(line: string): number {
-  let firstDigitChar = searchPart2FirstDigitChar(line);
+  const firstDigitChar = searchPart2FirstDigitChar(line);
   if (firstDigitChar === undefined) {
     return 0;
   }
-  let lastDigitChar = searchPart2LastDigitChar(line);
+  const lastDigitChar = searchPart2LastDigitChar(line);
   if (lastDigitChar === undefined) {
     return 0;
   }
@@ -103,11 +103,11 @@ function getPart2CalibrationValue(line: string): number {
 
 function searchPart2FirstDigitChar(line: string): string | undefined {
   for (let i = 0; i < line.length; i++) {
-    let char = line[i];
+    const char = line.charAt(i);
     if (isDigit(char)) {
       return char;
     }
-    let digitChar = searchDigitCharAsSpelledDigit(line, i);
+    const digitChar = searchDigitCharAsSpelledDigit(line, i);
     if (digitChar !== undefined) {
       return digitChar;
     }
@@ -117,11 +117,11 @@ function searchPart2FirstDigitChar(line: string): string | undefined {
 
 function searchPart2LastDigitChar(line: string): string | undefined {
   for (let i = line.length - 1; i >= 0; i--) {
-    let char = line[i];
+    const char = line.charAt(i);
     if (isDigit(char)) {
       return char;
     }
-    let digitChar = searchDigitCharAsSpelledDigit(line, i);
+    const digitChar = searchDigitCharAsSpelledDigit(line, i);
     if (digitChar !== undefined) {
       return digitChar;
     }
@@ -133,7 +133,7 @@ function searchDigitCharAsSpelledDigit(
   line: string,
   position: number
 ): string | undefined {
-  for (let [spelledDigit, digitChar] of digitCharBySpelledDigit.entries()) {
+  for (const [spelledDigit, digitChar] of digitCharBySpelledDigit.entries()) {
     if (line.startsWith(spelledDigit, position)) {
       return digitChar;
     }
@@ -141,9 +141,9 @@ function searchDigitCharAsSpelledDigit(
   return undefined;
 }
 
-let testFilePath = process.cwd() + '/src/day1/test-input.txt';
-let testFile2Path = process.cwd() + '/src/day1/part-two-test-input.txt';
-let filePath = process.cwd() + '/src/day1/input.txt';
+const testFilePath = process.cwd() + '/src/day1/test-input.txt';
+const testFile2Path = process.cwd() + '/src/day1/part-two-test-input.txt';
+const filePath = process.cwd() + '/src/day1/input.txt';
 
 day1Part1(testFilePath); // 142
 day1Part2(testFile2Path); // 281
