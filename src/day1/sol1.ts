@@ -21,12 +21,12 @@ class Day1 {
   }
 
   public part1(): number {
-    const lines = this.readFileLines(this.filePath);
+    const lines = this.readFileLines();
     return this.sumCalibrationValues(lines);
   }
 
-  private readFileLines(filePath: string): string[] {
-    const lines = readFileSync(filePath, 'utf8').split('\n');
+  private readFileLines(): string[] {
+    const lines = readFileSync(this.filePath, 'utf8').split('\n');
     if (lines[lines.length - 1] === '') {
       lines.pop();
     }
@@ -82,7 +82,7 @@ class Day1 {
   }
 
   public part2(): number {
-    const lines = this.readFileLines(this.filePath);
+    const lines = this.readFileLines();
     return this.sumPart2CalibrationValues(lines);
   }
 
