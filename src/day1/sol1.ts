@@ -1,7 +1,23 @@
 import { readFileSync } from 'node:fs';
 
-class Day1 {
+class FileReader {
   private filePath: string;
+
+  public constructor(filePath: string) {
+    this.filePath = filePath;
+  }
+
+  public readFileLines(): string[] {
+    const lines = readFileSync(this.filePath, 'utf8').split('\n');
+    if (lines[lines.length - 1] === '') {
+      lines.pop();
+    }
+    return lines;
+  }
+}
+
+class Day1 {
+  private fileReader: FileReader;
 
   private static readonly digitCharBySpelledDigit: ReadonlyMap<string, string> =
     new Map([
@@ -16,21 +32,13 @@ class Day1 {
       ['nine', '9'],
     ]);
 
-  public constructor(filePath: string) {
-    this.filePath = filePath;
+  public constructor(fileReader: FileReader) {
+    this.fileReader = fileReader;
   }
 
   public part1(): number {
-    const lines = this.readFileLines();
+    const lines = this.fileReader.readFileLines();
     return this.sumCalibrationValues(lines);
-  }
-
-  private readFileLines(): string[] {
-    const lines = readFileSync(this.filePath, 'utf8').split('\n');
-    if (lines[lines.length - 1] === '') {
-      lines.pop();
-    }
-    return lines;
   }
 
   private sumCalibrationValues(lines: string[]): number {
@@ -82,7 +90,7 @@ class Day1 {
   }
 
   public part2(): number {
-    const lines = this.readFileLines();
+    const lines = this.fileReader.readFileLines();
     return this.sumPart2CalibrationValues(lines);
   }
 
@@ -159,12 +167,15 @@ const part1TestFilePath = process.cwd() + '/src/day1/test-input.txt';
 const part2TestFilePath = process.cwd() + '/src/day1/part-two-test-input.txt';
 const filePath = process.cwd() + '/src/day1/input.txt';
 
-const part1TestDay1 = new Day1(part1TestFilePath);
+const part1TestFileReader = new FileReader(part1TestFilePath);
+const part1TestDay1 = new Day1(part1TestFileReader);
 console.log(`Part 1 test result: ${part1TestDay1.part1()}`); // 142
 
-const part2TestDay1 = new Day1(part2TestFilePath);
+const part2TestFileReader = new FileReader(part2TestFilePath);
+const part2TestDay1 = new Day1(part2TestFileReader);
 console.log(`Part 2 test result: ${part2TestDay1.part2()}`); // 281
 
-const day1 = new Day1(filePath);
+const fileReader = new FileReader(filePath);
+const day1 = new Day1(fileReader);
 console.log(`Part 1 result: ${day1.part1()}`); // 54573
 console.log(`Part 2 result: ${day1.part2()}`); // 54591
